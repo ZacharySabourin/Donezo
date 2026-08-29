@@ -1,10 +1,10 @@
-import type ApiError from "../types/ApiError";
-import type Todo from "../types/Todo";
-import ErrorMessage from "./ErrorMessage";
-import LoadingPlaceholder from "./LoadingPlaceholder";
+import type ApiError from "../../types/ApiError";
+import type Todo from "../../types/Todo";
+import ErrorMessage from "../ErrorMessage";
+import LoadingPlaceholder from "../LoadingPlaceholder";
 import TodoItem from "./TodoItem";
 
-export default function TodoList({
+export default function ListDisplay({
   todos,
   loading,
   error,
@@ -23,7 +23,7 @@ export default function TodoList({
   }
 
   return (
-    <div id="todo-list">
+    <div id="list-display">
       {todos.map((todo: Todo) => (
         <TodoItem key={todo.id} todo={todo} onRefetch={refetch}/>
       ))}

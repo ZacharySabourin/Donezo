@@ -1,7 +1,6 @@
 import { useState } from "react";
-import CompletionCheck from "./CompletionCheck";
-import type Todo from "../types/Todo";
-import ApiError from "../types/ApiError";
+import ApiError from "../../types/ApiError";
+import type Todo from "../../types/Todo";
 
 const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
 const userId: string = import.meta.env.VITE_USER_ID;
@@ -40,6 +39,7 @@ export default function CreationForm({
           throw new ApiError("Error creating new Todo", response.status);
         }
         e.target.reset();
+        setCompleted(false);
         onSaveSuccess();
       })
       .catch((error: ApiError) => {
@@ -48,22 +48,17 @@ export default function CreationForm({
       });
   }
 
-  function handleCompletion(checked: boolean) {
-    console.log(`Checkbox updated to ${checked}`);
-    setCompleted(checked);
-  }
-
   return (
     <div id="creation-form">
       <form onSubmit={handleSubmit} className="creation-form">
-        <CompletionCheck
-          isCompleted={completed}
-          completionCallback={handleCompletion}
+        <input
+          type="checkbox"
+          className="completion-check"
+          checked={completed}
+          onChange={(e) => setCompleted(e.target.checked)}
         />
         <input
           type="text"
-          id="text-box"
-          className="text-box"
           placeholder="Create a new Todo..."
           onChange={(e) => setText(e.target.value)}
         />
