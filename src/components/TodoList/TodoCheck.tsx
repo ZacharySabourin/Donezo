@@ -8,9 +8,11 @@ const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
 export default function TodoCheck({
   todoId,
   initialValue,
+  onRefetch
 }: Readonly<{
   todoId: string | null;
   initialValue: boolean;
+  onRefetch: () => void;
 }>) {
   const [completed, setCompleted] = useState<boolean>(initialValue);
   const debouncedComplete = useDebounce(completed);
@@ -28,6 +30,7 @@ export default function TodoCheck({
         if (!response.ok) {
           throw new ApiError("Error updating Todo", response.status);
         }
+        onRefetch();
         console.log(`Request sent ${completed}`);
       })
       .catch((error: ApiError) => {
