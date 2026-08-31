@@ -1,13 +1,15 @@
 import { useState } from "react";
 import ApiError from "../../types/ApiError";
-import type Todo from "../../types/Todo";
+import type TodoRequest from "../../types/TodoRequest";
 
 const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
 const userId: string = import.meta.env.VITE_USER_ID;
 
 export default function CreationForm({
+  todoCount,
   onSaveSuccess,
 }: Readonly<{
+  todoCount: number;
   onSaveSuccess: () => void;
 }>) {
   const [completed, setCompleted] = useState(false);
@@ -18,13 +20,11 @@ export default function CreationForm({
   function handleSubmit(e: any) {
     e.preventDefault();
 
-    const newTodo: Todo = {
+    const newTodo: TodoRequest = {
       user_id: userId,
       text: text,
-      position: 0,
+      position: todoCount,
       completed: completed,
-      created_at: null,
-      id: null,
     };
 
     fetch(baseUrl + userId, {

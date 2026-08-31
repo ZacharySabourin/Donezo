@@ -1,10 +1,15 @@
 import { useState } from "react";
 import useFetchSortedTodos from "../../hooks/useFetchSortedTodos";
+import useUpdateEffect from "../../hooks/useUpdateEffect";
 import ApiError from "../../types/ApiError";
+import type Todo from "../../types/Todo";
+import type {
+  TodoCompletionUpdate,
+  TodoTextUpdate,
+} from "../../types/TodoUpdates";
+import updateTodo, { deleteTodo, deleteTodoList } from "../../utils/TodoAPI";
 import CreationForm from "./CreationForm";
 import ListDisplay from "./ListDisplay";
-import type Todo from "../../types/Todo";
-import useUpdateEffect from "../../hooks/useUpdateEffect";
 
 const userId: string = import.meta.env.VITE_USER_ID;
 const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
@@ -14,63 +19,105 @@ export default function TodoListSection() {
   const triggerRefresh = () => setRefreshTrigger((prev) => !prev);
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
 
-  const { todos, loading, error, refetch } = useFetchSortedTodos(
+  const { todos, setTodos, loading, error } = useFetchSortedTodos(
     userId,
     refreshTrigger,
   );
 
-  const [filteredTodos, setFilteredTodos] = useState<Todo[]>(todos);
+  const [todoCount, setTodoCount] = useState<number>(todos.length);
+  const [todosToDisplay, setTodosToDisplay] = useState<Todo[]>(todos);
 
-  function handleDeleteAllCompleted() {
+  const handleDeleteAllCompleted = async () => {
     const toDelete: Todo[] = todos.slice().filter((todo) => todo.completed);
     if (toDelete.length != 0) {
-      fetch(baseUrl, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(toDelete),
-      })
-        .then((response: Response) => {
-          if (!response.ok) {
-            throw new ApiError("Error deleting Todos", response.status);
-          }
-          triggerRefresh();
-        })
-        .catch((error: ApiError) => {
-          alert(error.message);
-        });
+      const originalValues = [...todos];
+      const updatedItems = todos.slice().filter((todo) => !todo.completed);
+
+      // TODO: update all positions
+      setTodos(updatedItems);
+
+      try {
+        await deleteTodoList(toDelete);
+      } catch (error) {
+        setTodos(originalValues);
+        // TODO: trigger error message
+      }
     }
-  }
+  };
+
+  const handleUpdateItem = async (
+    todoId: string,
+    originalValue: TodoCompletionUpdate | TodoTextUpdate,
+    update: TodoCompletionUpdate | TodoTextUpdate,
+  ) => {
+    setTodos((prev) =>
+      prev.map((todo) => (todo.id === todoId ? { ...todo, ...update } : todo)),
+    );
+
+    try {
+      await updateTodo(todoId, update);
+    } catch (error) {
+      setTodos((prev) =>
+        prev.map((todo) =>
+          todo.id === todoId ? { ...todo, ...originalValue } : todo,
+        ),
+      );
+      // TODO: trigger error message
+    }
+  };
+
+  const handleDeleteItem = async (todoId: string) => {
+    const originalValues = [...todos];
+    const updatedItems = [...todos];
+
+    const index: number = updatedItems.findIndex((todo) => todo.id === todoId);
+    updatedItems.splice(index, 1);
+
+    // TODO: update all positions
+
+    setTodos(updatedItems);
+
+    try {
+      await deleteTodo(todoId);
+    } catch (error) {
+      setTodos(originalValues);
+      // TODO: Trigger error message
+    }
+  };
 
   useUpdateEffect(() => {
-    setFilteredTodos(() => {
+    setTodosToDisplay(() => {
+      let display = [];
       if (selectedFilter === "active") {
-        return todos.slice().filter((todo) => !todo.completed);
+        display = todos.slice().filter((todo) => !todo.completed);
+      } else if (selectedFilter === "completed") {
+        display = todos.slice().filter((todo) => todo.completed);
+      } else {
+        display = todos;
       }
-      if (selectedFilter === "completed") {
-        return todos.slice().filter((todo) => todo.completed);
-      }
-      return todos;
+      setTodoCount(display.length);
+      return display;
     });
   }, [todos, selectedFilter]);
 
   return (
     <div id="todo-list">
-      <CreationForm onSaveSuccess={triggerRefresh} />
+      <CreationForm todoCount={todoCount} onSaveSuccess={triggerRefresh} />
       <ListDisplay
-        todos={filteredTodos}
+        todos={todosToDisplay}
         loading={loading}
         error={error}
-        refetch={refetch}
+        handleUpdateItem={handleUpdateItem}
+        handleDeleteItem={handleDeleteItem}
+        setTodos={setTodos}
       />
       <div id="options">
-        <p>{todos.length} items left</p>
+        <p>{todoCount} items left</p>
         <form>
           <label className="list-filter">
             <input
               type="radio"
-              name="choice"
+              name="filter"
               value="all"
               checked={selectedFilter === "all"}
               onChange={(e) => setSelectedFilter(e.target.value)}
@@ -81,7 +128,7 @@ export default function TodoListSection() {
           <label className="list-filter">
             <input
               type="radio"
-              name="choice"
+              name="filter"
               value="active"
               checked={selectedFilter === "active"}
               onChange={(e) => setSelectedFilter(e.target.value)}
@@ -92,7 +139,7 @@ export default function TodoListSection() {
           <label className="list-filter">
             <input
               type="radio"
-              name="choice"
+              name="filter"
               value="completed"
               checked={selectedFilter === "completed"}
               onChange={(e) => setSelectedFilter(e.target.value)}

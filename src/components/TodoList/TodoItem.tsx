@@ -1,28 +1,79 @@
+import { useEffect, useRef, useState } from "react";
+import useDebounce from "../../hooks/useDebounce";
+import useUpdateEffect from "../../hooks/useUpdateEffect";
 import type Todo from "../../types/Todo";
-import TodoCheck from "./TodoCheck";
-import TodoDeleteButton from "./TodoDeleteButton";
-import TodoText from "./TodoText";
+import type {
+  TodoCompletionUpdate,
+  TodoTextUpdate,
+} from "../../types/TodoUpdates";
 
 export default function TodoItem({
   todo,
-  onRefetch,
+  handleUpdateItem,
+  handleDeleteItem,
 }: Readonly<{
   todo: Todo;
-  onRefetch: () => void;
+  handleUpdateItem: (
+    todoId: string,
+    originalValue: TodoCompletionUpdate | TodoTextUpdate,
+    updates: TodoCompletionUpdate | TodoTextUpdate,
+  ) => void;
+  handleDeleteItem: (todoId: string) => void;
 }>) {
+  const [completed, setCompleted] = useState<boolean>(todo.completed);
+  const debouncedComplete = useDebounce(completed);
+  const originalComplete = useRef(todo.completed);
+
+  const [text, setText] = useState<string>(todo.text);
+  const debouncedText = useDebounce(text);
+  const originalText = useRef(todo.text);
+
+  useEffect(() => {
+    setText(todo.text);
+    originalText.current = todo.text;
+  }, [todo.text]);
+
+  useEffect(() => {
+    setCompleted(todo.completed);
+    originalComplete.current = todo.completed;
+  }, [todo.completed]);
+
+  useUpdateEffect(() => {
+    const original: TodoCompletionUpdate = {
+      completed: originalComplete.current,
+    };
+    const update: TodoCompletionUpdate = {
+      completed: completed,
+    };
+    handleUpdateItem(todo.id, original, update);
+  }, [debouncedComplete]);
+
+  useUpdateEffect(() => {
+    const original: TodoTextUpdate = {
+      text: originalText.current,
+    };
+    const update: TodoTextUpdate = {
+      text: text,
+    };
+    handleUpdateItem(todo.id, original, update);
+  }, [debouncedText]);
+
   return (
-    <div>
-      <TodoCheck
-        todoId={todo.id}
-        initialValue={todo.completed}
-        onRefetch={onRefetch}
+    <>
+      <input
+        type="checkbox"
+        className="completion-check"
+        checked={completed}
+        onChange={(e) => setCompleted(e.target.checked)}
       />
-      <TodoText
-        todoId={todo.id}
-        initialValue={todo.text}
-        onRefetch={onRefetch}
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
       />
-      <TodoDeleteButton todoId={todo.id} onRefetch={onRefetch} />
-    </div>
+      <button type="button" onClick={() => handleDeleteItem(todo.id)}>
+        Delete
+      </button>
+    </>
   );
 }

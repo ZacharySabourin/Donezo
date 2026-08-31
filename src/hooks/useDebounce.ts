@@ -9,14 +9,14 @@ import { useEffect, useState } from "react";
 export default function useDebounce(value: any, delay: number = 800): string {
   const [debouncedValue, setDebouncedValue] = useState<any>(value);
 
-  // Used to allow for a brief pause after typing before sending a text update to the server
+  // Used to allow for a brief pause after typing before sending an update to the server
   useEffect(() => {
-    // After 1000ms, updates the debounced text to trigger an API call
+    // After a delay, updates the debounced value to trigger an API call
     const timeoutHandler = setTimeout(() => {
       setDebouncedValue(value);
-    }, 1000);
+    }, delay);
 
-    // Resets the timer every time the text is updated
+    // Resets the timer every time the value or the delay is updated
     return () => {
       clearTimeout(timeoutHandler);
     };
