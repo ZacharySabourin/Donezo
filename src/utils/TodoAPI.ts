@@ -1,6 +1,7 @@
 import ApiError from "../types/ApiError";
 import type Todo from "../types/Todo";
 import type {
+  BulkTodoPositionUpdate,
   TodoCompletionUpdate,
   TodoTextUpdate,
 } from "../types/TodoUpdates";
@@ -8,7 +9,7 @@ import type {
 const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
 const userId: string = import.meta.env.VITE_USER_ID;
 
-export default async function updateTodo(
+export async function updateTodo(
   todoId: string,
   update: TodoCompletionUpdate | TodoTextUpdate,
 ): Promise<ApiError | void> {
@@ -21,6 +22,22 @@ export default async function updateTodo(
   }).then((response: Response) => {
     if (!response.ok) {
       throw new ApiError("Error updating Todo", response.status);
+    }
+  });
+}
+
+export async function updateTodos(
+  updates: BulkTodoPositionUpdate[],
+): Promise<ApiError | void> {
+  fetch(baseUrl, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updates),
+  }).then((response: Response) => {
+    if (!response.ok) {
+      throw new ApiError("Error updating Todos", response.status);
     }
   });
 }

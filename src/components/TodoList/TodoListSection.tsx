@@ -1,18 +1,22 @@
 import { useState } from "react";
 import useFetchSortedTodos from "../../hooks/useFetchSortedTodos";
 import useUpdateEffect from "../../hooks/useUpdateEffect";
-import ApiError from "../../types/ApiError";
 import type Todo from "../../types/Todo";
 import type {
+  BulkTodoPositionUpdate,
   TodoCompletionUpdate,
   TodoTextUpdate,
 } from "../../types/TodoUpdates";
-import updateTodo, { deleteTodo, deleteTodoList } from "../../utils/TodoAPI";
+import {
+  deleteTodo,
+  deleteTodoList,
+  updateTodo,
+  updateTodos,
+} from "../../utils/TodoAPI";
 import CreationForm from "./CreationForm";
 import ListDisplay from "./ListDisplay";
 
 const userId: string = import.meta.env.VITE_USER_ID;
-const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
 
 export default function TodoListSection() {
   const [refreshTrigger, setRefreshTrigger] = useState<boolean>(false);
@@ -33,11 +37,27 @@ export default function TodoListSection() {
       const originalValues = [...todos];
       const updatedItems = todos.slice().filter((todo) => !todo.completed);
 
-      // TODO: update all positions
+      const bulkUpdates: BulkTodoPositionUpdate[] = [];
+      let newPosition: number = 0;
+      updatedItems.forEach((todo) => {
+        if (todo.position != newPosition) {
+          const update: BulkTodoPositionUpdate = {
+            id: todo.id,
+            position: newPosition,
+          };
+          todo.position = newPosition;
+          bulkUpdates.push(update);
+        }
+        newPosition++;
+      });
+
       setTodos(updatedItems);
 
       try {
         await deleteTodoList(toDelete);
+        if (bulkUpdates.length != 0) {
+          await updateTodos(bulkUpdates);
+        }
       } catch (error) {
         setTodos(originalValues);
         // TODO: trigger error message
@@ -68,17 +88,32 @@ export default function TodoListSection() {
 
   const handleDeleteItem = async (todoId: string) => {
     const originalValues = [...todos];
-    const updatedItems = [...todos];
+    const updatedItems = todos.slice();
 
+    // Remove the item from the updated list
     const index: number = updatedItems.findIndex((todo) => todo.id === todoId);
     updatedItems.splice(index, 1);
 
-    // TODO: update all positions
+    // Starting at the removed item's position, shift every position down by 1 to compensate
+    const bulkUpdates: BulkTodoPositionUpdate[] = [];
+    for (let i = index; i < updatedItems.length; i++) {
+      updatedItems[i].position -= 1;
+
+      // Prepare the updates for the API
+      const update: BulkTodoPositionUpdate = {
+        id: updatedItems[i].id,
+        position: updatedItems[i].position,
+      };
+      bulkUpdates.push(update);
+    }
 
     setTodos(updatedItems);
 
     try {
       await deleteTodo(todoId);
+      if (bulkUpdates.length != 0) {
+        await updateTodos(bulkUpdates);
+      }
     } catch (error) {
       setTodos(originalValues);
       // TODO: Trigger error message

@@ -5,3 +5,8 @@ export interface TodoCompletionUpdate {
 export interface TodoTextUpdate {
   text: string;
 }
+
+export interface BulkTodoPositionUpdate {
+  id: string,
+  position: number
+}
