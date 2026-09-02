@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import useFetchSortedTodos from "../../hooks/useFetchSortedTodos";
 import useUpdateEffect from "../../hooks/useUpdateEffect";
 import type Todo from "../../types/Todo";
@@ -31,24 +31,26 @@ export default function TodoListSection() {
   const [todoCount, setTodoCount] = useState<number>(todos.length);
   const [todosToDisplay, setTodosToDisplay] = useState<Todo[]>(todos);
 
+  const originalTodoValues = useRef<Todo[]>([]);
+
   const handleDeleteAllCompleted = async () => {
-    const toDelete: Todo[] = todos.slice().filter((todo) => todo.completed);
+    const toDelete: Todo[] = todos.filter((todo) => todo.completed);
     if (toDelete.length != 0) {
-      const originalValues = [...todos];
-      const updatedItems = todos.slice().filter((todo) => !todo.completed);
+      // Make a deep copy since we are mutating fields of items in the array
+      const updatedItems = structuredClone(
+        todos.filter((todo) => !todo.completed),
+      );
+      originalTodoValues.current = [...todos];
 
       const bulkUpdates: BulkTodoPositionUpdate[] = [];
-      let newPosition: number = 0;
-      updatedItems.forEach((todo) => {
-        if (todo.position != newPosition) {
-          const update: BulkTodoPositionUpdate = {
+      updatedItems.forEach((todo, index) => {
+        if (todo.position != index) {
+          todo.position = index;
+          bulkUpdates.push({
             id: todo.id,
-            position: newPosition,
-          };
-          todo.position = newPosition;
-          bulkUpdates.push(update);
+            position: index,
+          });
         }
-        newPosition++;
       });
 
       setTodos(updatedItems);
@@ -59,8 +61,10 @@ export default function TodoListSection() {
           await updateTodos(bulkUpdates);
         }
       } catch (error) {
-        setTodos(originalValues);
+        setTodos(originalTodoValues.current);
         // TODO: trigger error message
+      } finally {
+        originalTodoValues.current = [];
       }
     }
   };
@@ -87,8 +91,9 @@ export default function TodoListSection() {
   };
 
   const handleDeleteItem = async (todoId: string) => {
-    const originalValues = [...todos];
-    const updatedItems = todos.slice();
+    // Make a deep copy since we are mutating fields of items in the array
+    const updatedItems = structuredClone(todos);
+    originalTodoValues.current = [...todos];
 
     // Remove the item from the updated list
     const index: number = updatedItems.findIndex((todo) => todo.id === todoId);
@@ -100,11 +105,10 @@ export default function TodoListSection() {
       updatedItems[i].position -= 1;
 
       // Prepare the updates for the API
-      const update: BulkTodoPositionUpdate = {
+      bulkUpdates.push({
         id: updatedItems[i].id,
         position: updatedItems[i].position,
-      };
-      bulkUpdates.push(update);
+      });
     }
 
     setTodos(updatedItems);
@@ -115,20 +119,21 @@ export default function TodoListSection() {
         await updateTodos(bulkUpdates);
       }
     } catch (error) {
-      setTodos(originalValues);
+      setTodos(originalTodoValues.current);
       // TODO: Trigger error message
+    } finally {
+      originalTodoValues.current = [];
     }
   };
 
+  // Filter trigger
   useUpdateEffect(() => {
     setTodosToDisplay(() => {
-      let display = [];
+      let display = [...todos];
       if (selectedFilter === "active") {
-        display = todos.slice().filter((todo) => !todo.completed);
+        display = display.filter((todo) => !todo.completed);
       } else if (selectedFilter === "completed") {
-        display = todos.slice().filter((todo) => todo.completed);
-      } else {
-        display = todos;
+        display = display.filter((todo) => todo.completed);
       }
       setTodoCount(display.length);
       return display;

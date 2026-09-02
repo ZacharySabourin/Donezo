@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type ApiError from "../../types/ApiError";
 import type Todo from "../../types/Todo";
 import type {
+  BulkTodoPositionUpdate,
   TodoCompletionUpdate,
   TodoTextUpdate,
 } from "../../types/TodoUpdates";
 import ErrorMessage from "../ErrorMessage";
 import LoadingPlaceholder from "../LoadingPlaceholder";
 import TodoItem from "./TodoItem";
+import { updateTodos } from "../../utils/TodoAPI";
 
 export default function ListDisplay({
   todos,
@@ -29,13 +31,46 @@ export default function ListDisplay({
   setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
 }>) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
+  const originalTodoValues = useRef<Todo[]>([]);
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
+    originalTodoValues.current = [...todos];
   };
 
-  const handleDragEnd = () => {
+  const handleDragEnd = async () => {
     setDraggedIndex(null);
+    setIsSaving(true);
+
+    // Make a deep copy since we are mutating fields of items in the array
+    const updatedItems = structuredClone(todos);
+
+    const bulkUpdates: BulkTodoPositionUpdate[] = [];
+    updatedItems.forEach((todo, index) => {
+      if (todo.position != index) {
+        todo.position = index;
+        bulkUpdates.push({
+          id: todo.id,
+          position: index,
+        });
+      }
+    });
+
+    setTodos(updatedItems);
+
+    try {
+      await updateTodos(bulkUpdates);
+    } catch (error) {
+      if (originalTodoValues.current) {
+        setTodos(originalTodoValues.current);
+      }
+      // TODO: trigger error message
+    } finally {
+      setIsSaving(false);
+      originalTodoValues.current = [];
+    }
   };
 
   const handleDragOver = (
@@ -50,9 +85,6 @@ export default function ListDisplay({
     const updatedItems = [...todos];
     const draggedItem = updatedItems[draggedIndex];
 
-    // Remove from old position and insert into new position
-    updatedItems[index].position = draggedItem.position;
-    draggedItem.position = index;
     updatedItems.splice(draggedIndex, 1);
     updatedItems.splice(index, 0, draggedItem);
 
@@ -74,12 +106,16 @@ export default function ListDisplay({
         return (
           <div
             key={todo.id}
-            draggable
+            draggable={!isSaving}
             onDragStart={() => handleDragStart(index)}
             onDragEnd={handleDragEnd}
             onDragOver={(e) => handleDragOver(e, index)}
           >
-            <TodoItem todo={todo} handleUpdateItem={handleUpdateItem} handleDeleteItem={handleDeleteItem}/>
+            <TodoItem
+              todo={todo}
+              handleUpdateItem={handleUpdateItem}
+              handleDeleteItem={handleDeleteItem}
+            />
           </div>
         );
       })}
