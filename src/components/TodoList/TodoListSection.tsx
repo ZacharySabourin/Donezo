@@ -141,7 +141,7 @@ export default function TodoListSection() {
   }, [todos, selectedFilter]);
 
   return (
-    <div id="todo-list">
+    <div id="todo-list-section" className="flex-column-start">
       <CreationForm todoCount={todoCount} onSaveSuccess={triggerRefresh} />
       <ListDisplay
         todos={todosToDisplay}
@@ -151,10 +151,11 @@ export default function TodoListSection() {
         handleDeleteItem={handleDeleteItem}
         setTodos={setTodos}
       />
-      <div id="options">
+      <hr />
+      <div className="list-options flex-item">
         <p>{todoCount} items left</p>
-        <form>
-          <label className="list-filter">
+        <form className="filter-group">
+          <label className="filter-choice gradient-primary round-btn border-box interactive">
             <input
               type="radio"
               name="filter"
@@ -165,7 +166,7 @@ export default function TodoListSection() {
             <span>All</span>
           </label>
 
-          <label className="list-filter">
+          <label className="filter-choice gradient-primary round-btn border-box interactive">
             <input
               type="radio"
               name="filter"
@@ -176,7 +177,7 @@ export default function TodoListSection() {
             <span>Active</span>
           </label>
 
-          <label className="list-filter">
+          <label className="filter-choice gradient-primary round-btn border-box interactive">
             <input
               type="radio"
               name="filter"
@@ -188,7 +189,11 @@ export default function TodoListSection() {
           </label>
         </form>
 
-        <button type="button" onClick={handleDeleteAllCompleted}>
+        <button
+          className="round-btn gradient-secondary border-box interactive"
+          type="button"
+          onClick={handleDeleteAllCompleted}
+        >
           Clear all Completed
         </button>
       </div>

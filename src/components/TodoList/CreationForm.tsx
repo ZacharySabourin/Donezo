@@ -49,15 +49,16 @@ export default function CreationForm({
   }
 
   return (
-    <div id="creation-form">
-      <form onSubmit={handleSubmit} className="creation-form">
+    <div className="flex-item-wrapper">
+      <form onSubmit={handleSubmit} className="flex-item">
         <input
           type="checkbox"
-          className="completion-check"
+          className="completion-check round-btn border-box interactive"
           checked={completed}
           onChange={(e) => setCompleted(e.target.checked)}
         />
         <input
+          className="todo-input"
           type="text"
           placeholder="Create a new Todo..."
           onChange={(e) => setText(e.target.value)}

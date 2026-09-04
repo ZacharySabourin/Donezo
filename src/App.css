@@ -1,33 +1,50 @@
-.list-filter {
-  input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
 
-  span {
-    display: inline-block;
-    padding: 2px 6px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: sans-serif;
-    user-select: none;
-    transition:
-      background 0.2s,
-      border-color 0.2s;
-  }
+.gradient-primary {
+  background-image:
+    linear-gradient(to bottom right, var(--bg-primary), var(--bg-secondary)),
+    linear-gradient(
+      to bottom right,
+      var(--primary-color-light),
+      var(--primary-color-dark)
+    );
+}
 
-  span:hover {
-    background-color: #f0f0f0;
-  }
+.gradient-secondary {
+  background-image:
+    linear-gradient(to bottom right, var(--bg-primary), var(--bg-secondary)),
+    linear-gradient(
+      to bottom right,
+      var(--secondary-color-light),
+      var(--secondary-color-dark)
+    );
+}
 
-  input[type="radio"]:checked + span {
-    background-color: #007bff;
-    color: white;
-    border-color: #0056b3;
-  }
+.border-box {
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+.round-btn {
+  height: 100%;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 20px;
+}
+
+.interactive {
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    background 0.2s ease,
+    transform 0.1s ease;
+}
+
+.interactive:hover {
+  transform: scale(1.1);
+}
+
+.interactive:active {
+  transform: scale(0.9);
 }
 
 #title-card {
@@ -37,21 +54,153 @@
   place-content: center;
 }
 
-/* #options {
-  display: flex;
-  flex-direction:row;
-  place-content: center;
-} */
-
-#todo-list {
+.flex-column-start {
   display: flex;
   flex-direction: column;
-  gap: 20px;
   place-content: flex-start;
-  flex-grow: 1;
+}
 
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
+#todo-list-section {
+  gap: 15px;
+  flex-grow: 1;
+  margin-left: 25%;
+  margin-right: 25%;
+}
+
+#list-display {
+  gap: 5px;
+  min-height: 230px;
+}
+
+.flex-item-wrapper {
+  display: flex;
+  flex-direction: row;
+  place-content: start;
+  gap: 5px;
+
+  border-radius: 20px;
+  border: 1px solid;
+
+  padding: 5px 6px;
+  background-image: linear-gradient(
+    to bottom right,
+    var(--list-bg-primary),
+    var(--list-bg-secondary)
+  );
+  border-color: var(--border);
+}
+
+.flex-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  width: 100%;
+}
+
+.todo-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  background-color: transparent;
+  padding: 0 4px;
+  font-size: 1rem;
+}
+
+.todo-input:focus {
+  outline: none;
+}
+
+.completion-check {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  margin: 0;
+  cursor: pointer;
+
+  height: 30px;
+  width: 30px;
+
+  border: 2px solid transparent;
+  border-radius: 20px;
+  background-image:
+    linear-gradient(var(--list-bg-primary), var(--list-bg-primary)),
+    linear-gradient(
+      to bottom right,
+      var(--primary-color-light),
+      var(--primary-color-dark)
+    );
+}
+
+.completion-check:checked {
+  background-image: linear-gradient(
+    to bottom right,
+    var(--primary-color-light),
+    var(--primary-color-dark)
+  );
+  background-clip: border-box;
+}
+
+.drag-indicator {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding-top: 2px;
+  user-select: none;
+  cursor: grab;
+}
+
+.list-options {
+  padding: 0 5px;
+  height: 30px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: row;
+  place-content: center;
+  gap: 5px;
+  flex: 1;
+  height: 100%;
+}
+
+.filter-choice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+
+  input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
   }
+
+  span {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text-h);
+  }
+}
+
+.filter-choice:has(input[type="radio"]:checked) {
+  background-image: linear-gradient(
+    to bottom right,
+    var(--primary-color-light),
+    var(--primary-color-dark)
+  );
+  background-clip: border-box;
+}
+
+hr {
+  border: none;
+  height: 1px;
+  width: 60%;
+  background-color: var(--border);
+}
+
+.shadow {
+  box-shadow: var(--shadow);
 }

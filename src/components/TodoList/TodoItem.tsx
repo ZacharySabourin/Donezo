@@ -59,21 +59,26 @@ export default function TodoItem({
   }, [debouncedText]);
 
   return (
-    <>
+    <div className="flex-item">
       <input
+        className="completion-check border-box interactive"
         type="checkbox"
-        className="completion-check"
         checked={completed}
         onChange={(e) => setCompleted(e.target.checked)}
       />
       <input
+        className="todo-input"
         type="text"
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
-      <button type="button" onClick={() => handleDeleteItem(todo.id)}>
+      <button
+        className="round-btn gradient-secondary border-box interactive"
+        type="button"
+        onClick={() => handleDeleteItem(todo.id)}
+      >
         Delete
       </button>
-    </>
+    </div>
   );
 }

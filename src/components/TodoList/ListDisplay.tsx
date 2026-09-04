@@ -61,7 +61,9 @@ export default function ListDisplay({
     setTodos(updatedItems);
 
     try {
-      await updateTodos(bulkUpdates);
+      if (bulkUpdates.length != 0) {
+        await updateTodos(bulkUpdates);
+      }
     } catch (error) {
       if (originalTodoValues.current) {
         setTodos(originalTodoValues.current);
@@ -100,15 +102,13 @@ export default function ListDisplay({
   }
 
   return (
-    <div id="list-display">
+    <div id="list-display" className="flex-column-start">
       {todos.map((todo: Todo, index) => {
         const isCurrentlyDragging = draggedIndex == index;
         return (
           <div
             key={todo.id}
-            draggable={!isSaving}
-            onDragStart={() => handleDragStart(index)}
-            onDragEnd={handleDragEnd}
+            className="flex-item-wrapper"
             onDragOver={(e) => handleDragOver(e, index)}
           >
             <TodoItem
@@ -116,6 +116,20 @@ export default function ListDisplay({
               handleUpdateItem={handleUpdateItem}
               handleDeleteItem={handleDeleteItem}
             />
+            <div
+              className="drag-indicator"
+              draggable={!isSaving}
+              onDragStart={() => handleDragStart(index)}
+              onDragEnd={handleDragEnd}
+              onMouseDown={(e) => {
+                if (!isSaving) e.currentTarget.style.cursor = "grabbing";
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.cursor = "grab";
+              }}
+            >
+              ☰
+            </div>
           </div>
         );
       })}
