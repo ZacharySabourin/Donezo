@@ -1,44 +1,29 @@
 :root {
-  /* TODO: Add light version of colours */
+  color-scheme: light dark;
+  --text: #000;
+  --text-h: #000;
+  --bg-primary: #fcfcfc;
+  --bg-secondary: #cbcfd0;
+  --list-bg-primary: #fcfcfc;
+  --list-bg-secondary: #cbcfd0;
+  --border: #4f5c82;
+  --primary-color-light: #a080fd;
+  --primary-color-dark: #6d3df9;
 
   --sans: system-ui, "Segoe UI", Roboto, sans-serif;
   --heading: system-ui, "Segoe UI", Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background-image: linear-gradient(
-    to bottom right,
-    var(--bg-primary),
-    var(--bg-secondary)
-  );
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #cdd2db;
-    --text-h: #f3f4f6;
-    --bg-primary: #222a41;
-    --bg-secondary: #0c172b;
-    --border: #4f5c82;
-    --list-bg-primary: #384265;
-    --list-bg-secondary: #14223c;
-    --primary-color-light: #a080fd;
-    --primary-color-dark: #6d3df9;
-    --secondary-color-light: #00daad;
-    --secondary-color-dark: #0091ca;
-    --shadow: -3px -3px 4px #33373c, 3px 3px 5px #22232a;
-  }
+:root.dark {
+  --text: #ffffff;
+  --text-h: #f3f4f6;
+  --bg-primary: #222a41;
+  --bg-secondary: #0c172b;
+  --border: #4f5c82;
+  --list-bg-primary: #384265;
+  --list-bg-secondary: #14223c;
+  --primary-color-light: #00daad;
+  --primary-color-dark: #0091ca;
 }
 
 #root {
@@ -56,15 +41,30 @@
 
 body {
   margin: 0;
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color: var(--text);
+  background-image: linear-gradient(
+    to bottom right,
+    var(--bg-primary),
+    var(--bg-secondary)
+  );
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
 }
 
 h1 {
   font-family: var(--heading);
-  font-weight: 500;
+  font-weight: 700;
   color: var(--text-h);
   font-size: 56px;
   letter-spacing: -1.68px;
-  margin: 32px 0;
   @media (max-width: 1024px) {
     font-size: 36px;
     margin: 20px 0;
@@ -72,4 +72,16 @@ h1 {
 }
 p {
   margin: 0;
+}
+button {
+  color: var(--text);
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 14px;
+}
+span {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-h);
+  font-family: var(--sans);
 }

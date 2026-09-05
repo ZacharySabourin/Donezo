@@ -108,7 +108,7 @@ export default function ListDisplay({
         return (
           <div
             key={todo.id}
-            className="flex-item-wrapper"
+            className="row-item-wrapper flex-row-start"
             onDragOver={(e) => handleDragOver(e, index)}
           >
             <TodoItem

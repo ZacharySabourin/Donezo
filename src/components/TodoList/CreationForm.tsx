@@ -49,8 +49,8 @@ export default function CreationForm({
   }
 
   return (
-    <div className="flex-item-wrapper">
-      <form onSubmit={handleSubmit} className="flex-item">
+    <div className="row-item-wrapper">
+      <form onSubmit={handleSubmit} className="row-item flex-row-center">
         <input
           type="checkbox"
           className="completion-check round-btn border-box interactive"

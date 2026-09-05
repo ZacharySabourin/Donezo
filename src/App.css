@@ -1,21 +1,10 @@
-
-.gradient-primary {
+.gradient {
   background-image:
     linear-gradient(to bottom right, var(--bg-primary), var(--bg-secondary)),
     linear-gradient(
       to bottom right,
       var(--primary-color-light),
       var(--primary-color-dark)
-    );
-}
-
-.gradient-secondary {
-  background-image:
-    linear-gradient(to bottom right, var(--bg-primary), var(--bg-secondary)),
-    linear-gradient(
-      to bottom right,
-      var(--secondary-color-light),
-      var(--secondary-color-dark)
     );
 }
 
@@ -27,7 +16,7 @@
 .round-btn {
   height: 100%;
   cursor: pointer;
-  border: 1px solid transparent;
+  border: 2px solid transparent;
   border-radius: 20px;
 }
 
@@ -47,17 +36,35 @@
   transform: scale(0.9);
 }
 
-#title-card {
-  height: 200px;
-  display: flex;
-  flex-direction: column;
-  place-content: center;
-}
-
 .flex-column-start {
   display: flex;
   flex-direction: column;
-  place-content: flex-start;
+  place-content: start;
+}
+
+.flex-row-start {
+  display: flex;
+  flex-direction: row;
+  place-content: start;
+}
+
+.flex-row-center {
+  display: flex;
+  flex-direction: row;
+  place-content: center;
+}
+
+#title-card {
+  margin-top: 30px;
+  height: 250px;
+  margin-left: 25%;
+  margin-right: 25%;
+  align-items: center;
+}
+
+.title {
+  flex: 1;
+  text-align: left;
 }
 
 #todo-list-section {
@@ -72,26 +79,20 @@
   min-height: 230px;
 }
 
-.flex-item-wrapper {
-  display: flex;
-  flex-direction: row;
-  place-content: start;
+.row-item-wrapper {
   gap: 5px;
-
   border-radius: 20px;
   border: 1px solid;
-
+  border-color: var(--border);
   padding: 5px 6px;
   background-image: linear-gradient(
     to bottom right,
     var(--list-bg-primary),
     var(--list-bg-secondary)
   );
-  border-color: var(--border);
 }
 
-.flex-item {
-  display: flex;
+.row-item {
   align-items: center;
   gap: 5px;
   min-height: 30px;
@@ -100,16 +101,24 @@
 
 .todo-input {
   flex: 1;
-  min-width: 0;
   height: 100%;
   border: none;
   background-color: transparent;
   padding: 0 4px;
   font-size: 1rem;
+  color: var(--text);
+  font-family: var(--sans);
+  box-sizing: border-box;
 }
 
 .todo-input:focus {
   outline: none;
+}
+
+.todo-input::placeholder {
+  font-weight: 500;
+  font-size: 14px;
+  font-family: var(--sans);
 }
 
 .completion-check {
@@ -152,14 +161,11 @@
 }
 
 .list-options {
-  padding: 0 5px;
   height: 30px;
 }
 
 .filter-group {
-  display: flex;
-  flex-direction: row;
-  place-content: center;
+  align-items: center;
   gap: 5px;
   flex: 1;
   height: 100%;
@@ -177,12 +183,6 @@
     width: 0;
     height: 0;
   }
-
-  span {
-    font-weight: 500;
-    font-size: 14px;
-    color: var(--text-h);
-  }
 }
 
 .filter-choice:has(input[type="radio"]:checked) {
@@ -194,13 +194,17 @@
   background-clip: border-box;
 }
 
+.theme-icon {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  color: var(--primary-color-light);
+  align-items: center;
+}
+
 hr {
   border: none;
   height: 1px;
   width: 60%;
   background-color: var(--border);
-}
-
-.shadow {
-  box-shadow: var(--shadow);
 }

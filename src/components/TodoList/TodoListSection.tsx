@@ -152,10 +152,10 @@ export default function TodoListSection() {
         setTodos={setTodos}
       />
       <hr />
-      <div className="list-options flex-item">
+      <div className="list-options row-item flex-row-center">
         <p>{todoCount} items left</p>
-        <form className="filter-group">
-          <label className="filter-choice gradient-primary round-btn border-box interactive">
+        <form className="filter-group flex-row-center">
+          <label className="filter-choice gradient round-btn border-box interactive">
             <input
               type="radio"
               name="filter"
@@ -166,7 +166,7 @@ export default function TodoListSection() {
             <span>All</span>
           </label>
 
-          <label className="filter-choice gradient-primary round-btn border-box interactive">
+          <label className="filter-choice gradient round-btn border-box interactive">
             <input
               type="radio"
               name="filter"
@@ -177,7 +177,7 @@ export default function TodoListSection() {
             <span>Active</span>
           </label>
 
-          <label className="filter-choice gradient-primary round-btn border-box interactive">
+          <label className="filter-choice gradient round-btn border-box interactive">
             <input
               type="radio"
               name="filter"
@@ -190,11 +190,11 @@ export default function TodoListSection() {
         </form>
 
         <button
-          className="round-btn gradient-secondary border-box interactive"
+          className="round-btn gradient border-box interactive"
           type="button"
           onClick={handleDeleteAllCompleted}
         >
-          Clear all Completed
+          Clear Completed
         </button>
       </div>
     </div>

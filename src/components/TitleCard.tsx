@@ -1,11 +1,12 @@
-export default function TitleCard() {
+import ThemeToggle from "./ThemeToggle";
 
-  //TODO: Add dark/light theme
+export default function TitleCard() {
   return (
-    <div id="title-card">
-      <div>
+    <div id="title-card" className="flex-row-start">
+      <div className="title">
         <h1>DONEZO</h1>
       </div>
+      <ThemeToggle />
     </div>
   );
 }
