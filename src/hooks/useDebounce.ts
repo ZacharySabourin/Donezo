@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
  * @param delay The delay in ms. Default is 800ms
  * @returns The debounced value
  */
-export default function useDebounce(value: any, delay: number = 800): string {
+export default function useDebounce<T>(value: any, delay: number = 800): T {
   const [debouncedValue, setDebouncedValue] = useState<any>(value);
 
   // Used to allow for a brief pause after typing before sending an update to the server

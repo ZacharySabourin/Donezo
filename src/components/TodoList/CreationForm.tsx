@@ -1,51 +1,43 @@
 import { useState } from "react";
-import ApiError from "../../types/ApiError";
 import type TodoRequest from "../../types/TodoRequest";
+import { createTodoApi } from "../../utils/TodoAPI";
 
-const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
-const userId: string = import.meta.env.VITE_USER_ID;
+type CreationFormProps = Readonly<{
+  todoCount: number;
+  userId: string;
+  onSaveSuccess: () => void;
+}>;
 
 export default function CreationForm({
   todoCount,
+  userId,
   onSaveSuccess,
-}: Readonly<{
-  todoCount: number;
-  onSaveSuccess: () => void;
-}>) {
-  const [completed, setCompleted] = useState(false);
-  const [text, setText] = useState("");
+}: CreationFormProps) {
+  const [completed, setCompleted] = useState<boolean>(false);
+  const [text, setText] = useState<string>("");
 
-  const [error, setError] = useState<ApiError | null>(null);
-
-  function handleSubmit(e: any) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const newTodo: TodoRequest = {
+    if (!text.trim()) {
+      return;
+    }
+
+    const payload: TodoRequest = {
       user_id: userId,
-      text: text,
+      text,
       position: todoCount,
-      completed: completed,
+      completed,
     };
 
-    fetch(baseUrl + userId, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newTodo),
-    })
-      .then((response: Response) => {
-        if (!response.ok) {
-          throw new ApiError("Error creating new Todo", response.status);
-        }
-        e.target.reset();
-        setCompleted(false);
-        onSaveSuccess();
-      })
-      .catch((error: ApiError) => {
-        alert(error.message);
-        setError(error);
-      });
+    try {
+      await createTodoApi(payload);
+      setText("");
+      setCompleted(false);
+      onSaveSuccess();
+    } catch (error) {
+      alert((error as Error).message);
+    }
   }
 
   return (
@@ -61,6 +53,7 @@ export default function CreationForm({
           className="todo-input"
           type="text"
           placeholder="Create a new Todo..."
+          value={text}
           onChange={(e) => setText(e.target.value)}
         />
       </form>

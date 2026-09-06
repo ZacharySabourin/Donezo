@@ -7,11 +7,7 @@ import type {
   TodoTextUpdate,
 } from "../../types/TodoUpdates";
 
-export default function TodoItem({
-  todo,
-  handleUpdateItem,
-  handleDeleteItem,
-}: Readonly<{
+type TodoItemProps = Readonly<{
   todo: Todo;
   handleUpdateItem: (
     todoId: string,
@@ -19,32 +15,36 @@ export default function TodoItem({
     updates: TodoCompletionUpdate | TodoTextUpdate,
   ) => void;
   handleDeleteItem: (todoId: string) => void;
-}>) {
+}>;
+
+export default function TodoItem({
+  todo,
+  handleUpdateItem,
+  handleDeleteItem,
+}: TodoItemProps) {
   const [completed, setCompleted] = useState<boolean>(todo.completed);
-  const debouncedComplete = useDebounce(completed);
+  const debouncedComplete = useDebounce<boolean>(completed);
   const originalComplete = useRef(todo.completed);
 
   const [text, setText] = useState<string>(todo.text);
-  const debouncedText = useDebounce(text);
+  const debouncedText = useDebounce<string>(text);
   const originalText = useRef(todo.text);
-
-  useEffect(() => {
-    setText(todo.text);
-    originalText.current = todo.text;
-  }, [todo.text]);
 
   useEffect(() => {
     setCompleted(todo.completed);
     originalComplete.current = todo.completed;
   }, [todo.completed]);
 
+  useEffect(() => {
+    setText(todo.text);
+    originalText.current = todo.text;
+  }, [todo.text]);
+
   useUpdateEffect(() => {
     const original: TodoCompletionUpdate = {
       completed: originalComplete.current,
     };
-    const update: TodoCompletionUpdate = {
-      completed: completed,
-    };
+    const update: TodoCompletionUpdate = { completed };
     handleUpdateItem(todo.id, original, update);
   }, [debouncedComplete]);
 
@@ -52,9 +52,7 @@ export default function TodoItem({
     const original: TodoTextUpdate = {
       text: originalText.current,
     };
-    const update: TodoTextUpdate = {
-      text: text,
-    };
+    const update: TodoTextUpdate = { text };
     handleUpdateItem(todo.id, original, update);
   }, [debouncedText]);
 

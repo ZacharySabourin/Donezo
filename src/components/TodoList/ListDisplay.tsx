@@ -1,24 +1,15 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import type ApiError from "../../types/ApiError";
 import type Todo from "../../types/Todo";
 import type {
-  BulkTodoPositionUpdate,
   TodoCompletionUpdate,
   TodoTextUpdate,
 } from "../../types/TodoUpdates";
 import ErrorMessage from "../ErrorMessage";
 import LoadingPlaceholder from "../LoadingPlaceholder";
 import TodoItem from "./TodoItem";
-import { updateTodos } from "../../utils/TodoAPI";
 
-export default function ListDisplay({
-  todos,
-  loading,
-  error,
-  handleUpdateItem,
-  handleDeleteItem,
-  setTodos,
-}: Readonly<{
+type ListDisplayProps = Readonly<{
   todos: Todo[];
   loading: boolean;
   error: ApiError | null;
@@ -28,70 +19,52 @@ export default function ListDisplay({
     updates: TodoCompletionUpdate | TodoTextUpdate,
   ) => void;
   handleDeleteItem: (todoId: string) => void;
-  setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
-}>) {
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  onReorder: (draggedId: string, targetId: string) => Promise<void>;
+}>;
+
+export default function ListDisplay({
+  todos,
+  loading,
+  error,
+  handleUpdateItem,
+  handleDeleteItem,
+  onReorder,
+}: ListDisplayProps) {
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
-  const originalTodoValues = useRef<Todo[]>([]);
-
-  const handleDragStart = (index: number) => {
-    setDraggedIndex(index);
-    originalTodoValues.current = [...todos];
-  };
-
-  const handleDragEnd = async () => {
-    setDraggedIndex(null);
-    setIsSaving(true);
-
-    // Make a deep copy since we are mutating fields of items in the array
-    const updatedItems = structuredClone(todos);
-
-    const bulkUpdates: BulkTodoPositionUpdate[] = [];
-    updatedItems.forEach((todo, index) => {
-      if (todo.position != index) {
-        todo.position = index;
-        bulkUpdates.push({
-          id: todo.id,
-          position: index,
-        });
-      }
-    });
-
-    setTodos(updatedItems);
-
-    try {
-      if (bulkUpdates.length != 0) {
-        await updateTodos(bulkUpdates);
-      }
-    } catch (error) {
-      if (originalTodoValues.current) {
-        setTodos(originalTodoValues.current);
-      }
-      // TODO: trigger error message
-    } finally {
-      setIsSaving(false);
-      originalTodoValues.current = [];
-    }
+  const handleDragStart = (id: string) => {
+    setDraggedId(id);
+    setHoveredId(id);
   };
 
   const handleDragOver = (
     event: React.DragEvent<HTMLDivElement>,
-    index: number,
+    targetId: string,
   ) => {
     event.preventDefault();
-    if (draggedIndex === index || draggedIndex === null) {
+    if (!draggedId || draggedId === targetId) {
       return;
     }
 
-    const updatedItems = [...todos];
-    const draggedItem = updatedItems[draggedIndex];
+    setHoveredId(targetId);
+  };
 
-    updatedItems.splice(draggedIndex, 1);
-    updatedItems.splice(index, 0, draggedItem);
+  const handleDragEnd = async () => {
+    if (!draggedId || !hoveredId || draggedId === hoveredId) {
+      return;
+    }
 
-    setDraggedIndex(index);
-    setTodos(updatedItems);
+    const activeDraggedId = draggedId;
+    const activeHoveredId = hoveredId;
+
+    setDraggedId(null);
+    setHoveredId(null);
+    setIsSaving(true);
+
+    await onReorder(activeDraggedId, activeHoveredId);
+    setIsSaving(false);
   };
 
   if (loading) {
@@ -103,13 +76,12 @@ export default function ListDisplay({
 
   return (
     <div id="list-display" className="flex-column-start">
-      {todos.map((todo: Todo, index) => {
-        const isCurrentlyDragging = draggedIndex == index;
+      {todos.map((todo: Todo) => {
         return (
           <div
             key={todo.id}
             className="row-item-wrapper flex-row-start"
-            onDragOver={(e) => handleDragOver(e, index)}
+            onDragOver={(e) => handleDragOver(e, todo.id)}
           >
             <TodoItem
               todo={todo}
@@ -119,7 +91,7 @@ export default function ListDisplay({
             <div
               className="drag-indicator"
               draggable={!isSaving}
-              onDragStart={() => handleDragStart(index)}
+              onDragStart={() => handleDragStart(todo.id)}
               onDragEnd={handleDragEnd}
               onMouseDown={(e) => {
                 if (!isSaving) e.currentTarget.style.cursor = "grabbing";

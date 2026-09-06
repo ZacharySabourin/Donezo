@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import useUpdateEffect from "../hooks/useUpdateEffect";
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState("light");
@@ -14,7 +13,7 @@ export default function ThemeToggle() {
     setTheme(savedTheme || systemTheme);
   }, []);
 
-  useUpdateEffect(() => {
+  useEffect(() => {
     const root = window.document.documentElement;
 
     if (theme === "dark") {

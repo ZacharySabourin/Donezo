@@ -1,5 +1,6 @@
 import ApiError from "../types/ApiError";
 import type Todo from "../types/Todo";
+import type TodoRequest from "../types/TodoRequest";
 import type {
   BulkTodoPositionUpdate,
   TodoCompletionUpdate,
@@ -7,18 +8,47 @@ import type {
 } from "../types/TodoUpdates";
 
 const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
-const userId: string = import.meta.env.VITE_USER_ID;
 
-export async function updateTodo(
+export async function fetchSortedTodosApi(id: string): Promise<Todo[]> {
+  return fetch(baseUrl + id)
+    .then((response: Response) => {
+      if (!response.ok) {
+        throw new ApiError("Error fetching Todos!", response.status);
+      }
+      return response.json() as Promise<Todo[]>;
+    })
+    .then((result: Todo[]) => {
+      return result.sort(
+        (todoA: Todo, todoB: Todo) => todoA.position - todoB.position,
+      );
+    });
+}
+
+export async function createTodoApi(payload: TodoRequest): Promise<Todo> {
+  return fetch(baseUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  }).then((response: Response) => {
+    if (!response.ok) {
+      throw new ApiError("Error creating new Todo", response.status);
+    }
+    return response.json() as Promise<Todo>;
+  });
+}
+
+export async function updateTodoApi(
   todoId: string,
-  update: TodoCompletionUpdate | TodoTextUpdate,
-): Promise<ApiError | void> {
+  updates: TodoCompletionUpdate | TodoTextUpdate,
+): Promise<void> {
   fetch(baseUrl + todoId, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(update),
+    body: JSON.stringify(updates),
   }).then((response: Response) => {
     if (!response.ok) {
       throw new ApiError("Error updating Todo", response.status);
@@ -26,9 +56,9 @@ export async function updateTodo(
   });
 }
 
-export async function updateTodos(
+export async function updateTodosApi(
   updates: BulkTodoPositionUpdate[],
-): Promise<ApiError | void> {
+): Promise<void> {
   fetch(baseUrl, {
     method: "PATCH",
     headers: {
@@ -42,7 +72,7 @@ export async function updateTodos(
   });
 }
 
-export async function deleteTodo(todoId: string) {
+export async function deleteTodoApi(userId: string, todoId: string) {
   fetch(baseUrl + userId + "?todoId=" + todoId, {
     method: "DELETE",
   }).then((response: Response) => {
@@ -52,7 +82,7 @@ export async function deleteTodo(todoId: string) {
   });
 }
 
-export async function deleteTodoList(toDelete: Todo[]) {
+export async function deleteTodoListApi(toDelete: Todo[]) {
   fetch(baseUrl, {
     method: "DELETE",
     headers: {
