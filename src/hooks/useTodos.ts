@@ -1,24 +1,30 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import ApiError from "../types/ApiError";
 import type Todo from "../types/Todo";
-import type {
-  BulkTodoPositionUpdate,
-  TodoCompletionUpdate,
-  TodoTextUpdate,
-} from "../types/TodoUpdates";
+
 import {
+  createTodoApi,
   deleteTodoApi,
   deleteTodoListApi,
   fetchSortedTodosApi,
   updateTodoApi,
   updateTodosApi,
+  type BulkTodoPositionUpdate,
+  type TodoCompletionUpdate,
+  type TodoRequest,
+  type TodoTextUpdate,
 } from "../utils/TodoAPI";
 
+/**
+ * Return type for the useTodos() function. Contains a list of sorted Todos,
+ * the list loading state, the list error state, as well as handler callbacks
+ * for creation, updating, deletion and reordering of items in the list.
+ */
 interface UseTodosReturn {
   todos: Todo[];
   loading: boolean;
   error: ApiError | null;
-  triggerRefresh: () => void;
+  handleCreateItem: (payload: TodoRequest) => Promise<void>;
   handleUpdateItem: (
     todoId: string,
     originalValue: TodoCompletionUpdate | TodoTextUpdate,
@@ -29,16 +35,19 @@ interface UseTodosReturn {
   handleReorder: (draggedId: string, targetId: string) => Promise<void>;
 }
 
+/**
+ * 
+ * @param userId The current user's id
+ * @returns A UseTodosReturn object
+ */
 export function useTodos(userId: string): UseTodosReturn {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ApiError | null>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(false);
-  const triggerRefresh = () => setRefreshTrigger((prev) => !prev);
 
   const originalTodoValues = useRef<Todo[]>([]);
 
-  const refetch = useCallback(async () => {
+  const fetch = useCallback(async () => {
     try {
       setLoading(true);
       const sortedTodos = await fetchSortedTodosApi(userId);
@@ -50,10 +59,22 @@ export function useTodos(userId: string): UseTodosReturn {
     }
   }, [userId]);
 
-  // Hook will auto-fire on mount, userId change, the refreshTrigger is updated, or refetch is called
   useEffect(() => {
-    refetch();
-  }, [refetch, refreshTrigger]);
+    fetch();
+  }, [fetch]);
+
+  const handleCreateItem = async (payload: TodoRequest) => {
+    try {
+      const newTodo = await createTodoApi(payload);
+      setTodos((prev) => {
+        const updatedItems = [...prev];
+        updatedItems.push(newTodo);
+        return updatedItems;
+      });
+    } catch (error) {
+      alert((error as Error).message);
+    }
+  };
 
   const handleUpdateItem = async (
     todoId: string,
@@ -66,7 +87,7 @@ export function useTodos(userId: string): UseTodosReturn {
 
     try {
       await updateTodoApi(todoId, update);
-    } catch(error) {
+    } catch (error) {
       alert((error as Error).message);
       setTodos((prev) =>
         prev.map((todo) =>
@@ -103,7 +124,7 @@ export function useTodos(userId: string): UseTodosReturn {
       if (bulkUpdates.length > 0) {
         await updateTodosApi(bulkUpdates);
       }
-    } catch(error) {
+    } catch (error) {
       alert((error as Error).message);
       setTodos(originalTodoValues.current);
     } finally {
@@ -137,7 +158,7 @@ export function useTodos(userId: string): UseTodosReturn {
       if (bulkUpdates.length > 0) {
         await updateTodosApi(bulkUpdates);
       }
-    } catch(error) {
+    } catch (error) {
       alert((error as Error).message);
       setTodos(originalTodoValues.current);
     } finally {
@@ -177,7 +198,7 @@ export function useTodos(userId: string): UseTodosReturn {
       if (bulkUpdates.length > 0) {
         await updateTodosApi(bulkUpdates);
       }
-    } catch(error) {
+    } catch (error) {
       alert((error as Error).message);
       setTodos(originalMaster);
     }
@@ -187,7 +208,7 @@ export function useTodos(userId: string): UseTodosReturn {
     todos,
     loading,
     error,
-    triggerRefresh,
+    handleCreateItem,
     handleUpdateItem,
     handleDeleteItem,
     handleDeleteAllCompleted,

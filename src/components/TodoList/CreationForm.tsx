@@ -1,17 +1,16 @@
 import { useState } from "react";
-import type TodoRequest from "../../types/TodoRequest";
-import { createTodoApi } from "../../utils/TodoAPI";
+import type { TodoRequest } from "../../utils/TodoAPI";
 
 type CreationFormProps = Readonly<{
   todoCount: number;
   userId: string;
-  onSaveSuccess: () => void;
+  handleCreateItem: (payload: TodoRequest) => Promise<void>;
 }>;
 
 export default function CreationForm({
   todoCount,
   userId,
-  onSaveSuccess,
+  handleCreateItem,
 }: CreationFormProps) {
   const [completed, setCompleted] = useState<boolean>(false);
   const [text, setText] = useState<string>("");
@@ -23,18 +22,15 @@ export default function CreationForm({
       return;
     }
 
-    const payload: TodoRequest = {
-      user_id: userId,
-      text,
-      position: todoCount,
-      completed,
-    };
-
     try {
-      await createTodoApi(payload);
+      await handleCreateItem({
+        user_id: userId,
+        text,
+        position: todoCount,
+        completed,
+      });
       setText("");
       setCompleted(false);
-      onSaveSuccess();
     } catch (error) {
       alert((error as Error).message);
     }

@@ -1,13 +1,39 @@
 import ApiError from "../types/ApiError";
 import type Todo from "../types/Todo";
-import type TodoRequest from "../types/TodoRequest";
-import type {
-  BulkTodoPositionUpdate,
-  TodoCompletionUpdate,
-  TodoTextUpdate,
-} from "../types/TodoUpdates";
 
 const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
+
+/**
+ * Outgoing creation request object
+ */
+export interface TodoRequest {
+  user_id: string;
+  text: string;
+  position: number;
+  completed: boolean;
+}
+
+/**
+ * Outgoing update request object.
+ */
+export interface TodoCompletionUpdate {
+  completed: boolean;
+}
+
+/**
+ * Outgoing update request object.
+ */
+export interface TodoTextUpdate {
+  text: string;
+}
+
+/**
+ * Outgoing update request object.
+ */
+export interface BulkTodoPositionUpdate {
+  id: string;
+  position: number;
+}
 
 export async function fetchSortedTodosApi(id: string): Promise<Todo[]> {
   return fetch(baseUrl + id)

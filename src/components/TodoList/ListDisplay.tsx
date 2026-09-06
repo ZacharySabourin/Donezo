@@ -1,10 +1,8 @@
 import { useState } from "react";
 import type ApiError from "../../types/ApiError";
 import type Todo from "../../types/Todo";
-import type {
-  TodoCompletionUpdate,
-  TodoTextUpdate,
-} from "../../types/TodoUpdates";
+
+import type { TodoCompletionUpdate, TodoTextUpdate } from "../../utils/TodoAPI";
 import ErrorMessage from "../ErrorMessage";
 import LoadingPlaceholder from "../LoadingPlaceholder";
 import TodoItem from "./TodoItem";
@@ -17,8 +15,8 @@ type ListDisplayProps = Readonly<{
     todoId: string,
     originalValue: TodoCompletionUpdate | TodoTextUpdate,
     updates: TodoCompletionUpdate | TodoTextUpdate,
-  ) => void;
-  handleDeleteItem: (todoId: string) => void;
+  ) => Promise<void>;
+  handleDeleteItem: (todoId: string) => Promise<void>;
   onReorder: (draggedId: string, targetId: string) => Promise<void>;
 }>;
 

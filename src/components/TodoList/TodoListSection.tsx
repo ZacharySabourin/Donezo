@@ -14,7 +14,7 @@ export default function TodoListSection({
     todos,
     loading,
     error,
-    triggerRefresh,
+    handleCreateItem,
     handleUpdateItem,
     handleDeleteItem,
     handleDeleteAllCompleted,
@@ -36,7 +36,7 @@ export default function TodoListSection({
       <CreationForm
         userId={userId}
         todoCount={filteredTodos.length}
-        onSaveSuccess={triggerRefresh}
+        handleCreateItem={handleCreateItem}
       />
       <ListDisplay
         todos={filteredTodos}
