@@ -35,6 +35,13 @@ export interface BulkTodoPositionUpdate {
   position: number;
 }
 
+/**
+ * Fetches a list of Todos given the user id by making a GET request.
+ * Sorts them in ascending order based on position.
+ * @param id The current user's id
+ * @returns A list of Todos sorted by position in ascending order.
+ * @throws ApiError on failure to fetch
+ */
 export async function fetchSortedTodosApi(id: string): Promise<Todo[]> {
   return fetch(baseUrl + id)
     .then((response: Response) => {
@@ -50,6 +57,12 @@ export async function fetchSortedTodosApi(id: string): Promise<Todo[]> {
     });
 }
 
+/**
+ * Takes a payload and makes a POST request. Returns the newly persisted Todo entity.
+ * @param payload The new values used to create a Todo entity.
+ * @returns The newly created Todo object.
+ * @throws ApiError on failure to create
+ */
 export async function createTodoApi(payload: TodoRequest): Promise<Todo> {
   return fetch(baseUrl, {
     method: "POST",
@@ -65,6 +78,12 @@ export async function createTodoApi(payload: TodoRequest): Promise<Todo> {
   });
 }
 
+/**
+ * Sends a PATCH request to update a Todo given the id and update object.
+ * @param todoId The id to update
+ * @param updates The updated fields
+ * @throws ApiError on failure to update
+ */
 export async function updateTodoApi(
   todoId: string,
   updates: TodoCompletionUpdate | TodoTextUpdate,
@@ -82,6 +101,11 @@ export async function updateTodoApi(
   });
 }
 
+/**
+ * Sends a PATCH request to update a list of todos. The payload consists of a list of update objects.
+ * @param updates A list of updates to make.
+ * @throws ApiError on failure to update
+ */
 export async function updateTodosApi(
   updates: BulkTodoPositionUpdate[],
 ): Promise<void> {
@@ -98,7 +122,16 @@ export async function updateTodosApi(
   });
 }
 
-export async function deleteTodoApi(userId: string, todoId: string) {
+/**
+ * Sends a DELETE request to delete a given Todo.
+ * @param userId The current user's id
+ * @param todoId The id of the Todo to delete
+ * @throws ApiError on failure to delete
+ */
+export async function deleteTodoApi(
+  userId: string,
+  todoId: string,
+): Promise<void> {
   fetch(baseUrl + userId + "?todoId=" + todoId, {
     method: "DELETE",
   }).then((response: Response) => {
@@ -108,7 +141,12 @@ export async function deleteTodoApi(userId: string, todoId: string) {
   });
 }
 
-export async function deleteTodoListApi(toDelete: Todo[]) {
+/**
+ * Sends a DELETE request to delete a list of Todos.
+ * @param toDelete The Todos to delete.
+ * @throws ApiError on failure to delete
+ */
+export async function deleteTodoListApi(toDelete: Todo[]): Promise<void> {
   fetch(baseUrl, {
     method: "DELETE",
     headers: {

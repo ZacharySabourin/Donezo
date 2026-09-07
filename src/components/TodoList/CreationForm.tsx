@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { TodoRequest } from "../../utils/TodoAPI";
+import type { TodoRequest } from "../../services/TodoAPI";
 
 type CreationFormProps = Readonly<{
   todoCount: number;
@@ -18,6 +18,7 @@ export default function CreationForm({
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
 
+    // No request sent if the text is only spaces
     if (!text.trim()) {
       return;
     }
@@ -29,6 +30,8 @@ export default function CreationForm({
         position: todoCount,
         completed,
       });
+
+      // Reset values
       setText("");
       setCompleted(false);
     } catch (error) {

@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import useDebounce from "../../hooks/useDebounce";
 import useUpdateEffect from "../../hooks/useUpdateEffect";
 import type Todo from "../../types/Todo";
-import type { TodoCompletionUpdate, TodoTextUpdate } from "../../utils/TodoAPI";
+import type { TodoCompletionUpdate, TodoTextUpdate } from "../../services/TodoAPI";
 
 type TodoItemProps = Readonly<{
   todo: Todo;
@@ -20,37 +20,32 @@ export default function TodoItem({
   handleDeleteItem,
 }: TodoItemProps) {
   const [completed, setCompleted] = useState<boolean>(todo.completed);
-  const debouncedComplete = useDebounce<boolean>(completed);
-  const originalComplete = useRef(todo.completed);
-
   const [text, setText] = useState<string>(todo.text);
   const debouncedText = useDebounce<string>(text);
-  const originalText = useRef(todo.text);
 
+  // Synchronize state when the parent updates the todo prop
   useEffect(() => {
     setCompleted(todo.completed);
-    originalComplete.current = todo.completed;
-  }, [todo.completed]);
-
-  useEffect(() => {
     setText(todo.text);
-    originalText.current = todo.text;
-  }, [todo.text]);
+  }, [todo.completed, todo.text]);
 
-  useUpdateEffect(() => {
-    const original: TodoCompletionUpdate = {
-      completed: originalComplete.current,
-    };
-    const update: TodoCompletionUpdate = { completed };
-    handleUpdateItem(todo.id, original, update);
-  }, [debouncedComplete]);
+  const handleCompletionChange = (updatedValue: boolean) => {
+    setCompleted(updatedValue);
 
+    if (updatedValue !== todo.completed) {
+      const original: TodoCompletionUpdate = { completed: todo.completed };
+      const update: TodoCompletionUpdate = { completed: updatedValue };
+      handleUpdateItem(todo.id, original, update);
+    }
+  };
+
+  // If there are any changes after debouncing, trigger the update handler
   useUpdateEffect(() => {
-    const original: TodoTextUpdate = {
-      text: originalText.current,
-    };
-    const update: TodoTextUpdate = { text };
-    handleUpdateItem(todo.id, original, update);
+    if (debouncedText !== todo.text) {
+      const original: TodoTextUpdate = { text: todo.text };
+      const update: TodoTextUpdate = { text: debouncedText };
+      handleUpdateItem(todo.id, original, update);
+    }
   }, [debouncedText]);
 
   return (
@@ -59,7 +54,7 @@ export default function TodoItem({
         className="completion-check border-box interactive"
         type="checkbox"
         checked={completed}
-        onChange={(e) => setCompleted(e.target.checked)}
+        onChange={(e) => handleCompletionChange(e.target.checked)}
       />
       <input
         className="todo-input"

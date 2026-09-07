@@ -10,6 +10,7 @@ export default function TodoListSection({
 }: Readonly<{ userId: string }>) {
   const [selectedFilter, setSelectedFilter] = useState<FilterType>("All");
 
+  // Destructure todos, load state, error state, and all handlers to pass down to child comonents
   const {
     todos,
     loading,
@@ -21,6 +22,7 @@ export default function TodoListSection({
     handleReorder,
   } = useTodos(userId);
 
+  // Filter list based on completion
   const filteredTodos = todos.filter((todo) => {
     if (selectedFilter === "Active") {
       return !todo.completed;

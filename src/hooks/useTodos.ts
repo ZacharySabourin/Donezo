@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ApiError from "../types/ApiError";
 import type Todo from "../types/Todo";
 
@@ -13,7 +13,7 @@ import {
   type TodoCompletionUpdate,
   type TodoRequest,
   type TodoTextUpdate,
-} from "../utils/TodoAPI";
+} from "../services/TodoAPI";
 
 /**
  * Return type for the useTodos() function. Contains a list of sorted Todos,
@@ -36,21 +36,20 @@ interface UseTodosReturn {
 }
 
 /**
- * 
+ * Provides all handlers and state management for the master Todo list. Returns a UseTodoReturn object.
  * @param userId The current user's id
  * @returns A UseTodosReturn object
  */
 export function useTodos(userId: string): UseTodosReturn {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ApiError | null>(null);
 
-  const originalTodoValues = useRef<Todo[]>([]);
-
-  const fetch = useCallback(async () => {
+  // Use a callback since the list fetch is asynchronous code. Triggers on user id updates
+  const fetch: () => Promise<void> = useCallback(async () => {
     try {
       setLoading(true);
-      const sortedTodos = await fetchSortedTodosApi(userId);
+      const sortedTodos: Todo[] = await fetchSortedTodosApi(userId);
       setTodos(sortedTodos);
     } catch (error) {
       setError(error as ApiError);
@@ -59,148 +58,150 @@ export function useTodos(userId: string): UseTodosReturn {
     }
   }, [userId]);
 
+  // Triggers on component mount, and whenever the userId changes.
   useEffect(() => {
     fetch();
   }, [fetch]);
 
-  const handleCreateItem = async (payload: TodoRequest) => {
+  // Handler for item creation. Triggers an alert on failure
+  const handleCreateItem = async (payload: TodoRequest): Promise<void> => {
     try {
-      const newTodo = await createTodoApi(payload);
-      setTodos((prev) => {
-        const updatedItems = [...prev];
+      const newTodo: Todo = await createTodoApi(payload);
+      setTodos((prev: Todo[]) => {
+        const updatedItems: Todo[] = [...prev];
         updatedItems.push(newTodo);
         return updatedItems;
       });
     } catch (error) {
-      alert((error as Error).message);
+      alert((error as ApiError).message);
     }
   };
 
+  // Handler for single item update.
   const handleUpdateItem = async (
     todoId: string,
     originalValue: TodoCompletionUpdate | TodoTextUpdate,
     update: TodoCompletionUpdate | TodoTextUpdate,
-  ) => {
-    setTodos((prev) =>
-      prev.map((todo) => (todo.id === todoId ? { ...todo, ...update } : todo)),
+  ): Promise<void> => {
+    // Find relevant item and update value
+    setTodos((prev: Todo[]) =>
+      prev.map((todo: Todo) =>
+        todo.id === todoId ? { ...todo, ...update } : todo,
+      ),
     );
 
     try {
       await updateTodoApi(todoId, update);
     } catch (error) {
-      alert((error as Error).message);
-      setTodos((prev) =>
-        prev.map((todo) =>
+      alert((error as ApiError).message);
+      // Revert to original value
+      setTodos((prev: Todo[]) =>
+        prev.map((todo: Todo) =>
           todo.id === todoId ? { ...todo, ...originalValue } : todo,
         ),
       );
     }
   };
 
-  const handleDeleteItem = async (todoId: string) => {
-    const updatedItems = structuredClone(todos);
-    originalTodoValues.current = [...todos];
-
-    const index = updatedItems.findIndex((todo) => todo.id === todoId);
+  // Handler for single item deletion.
+  const handleDeleteItem = async (todoId: string): Promise<void> => {
+    const index: number = todos.findIndex((todo: Todo) => todo.id === todoId);
     if (index === -1) {
       return;
     }
 
-    updatedItems.splice(index, 1);
+    // Snapshot of original state
+    const snapshot: Todo[] = [...todos];
 
-    const bulkUpdates: BulkTodoPositionUpdate[] = [];
-    for (let i = index; i < updatedItems.length; i++) {
-      updatedItems[i].position -= 1;
-      bulkUpdates.push({
-        id: updatedItems[i].id,
-        position: updatedItems[i].position,
-      });
-    }
+    // Remove item
+    const copy: Todo[] = [...todos];
+    copy.splice(index, 1);
 
-    setTodos(updatedItems);
+    // Prepare updates and reorder
+    const { updates, reorderedItems } = reorderAndPrepareBulkUpdate(copy);
+    setTodos(reorderedItems);
 
     try {
       await deleteTodoApi(userId, todoId);
-      if (bulkUpdates.length > 0) {
-        await updateTodosApi(bulkUpdates);
+
+      // If the removed item is at the end, there won't be any updates here
+      if (updates.length > 0) {
+        await updateTodosApi(updates);
       }
     } catch (error) {
-      alert((error as Error).message);
-      setTodos(originalTodoValues.current);
-    } finally {
-      originalTodoValues.current = [];
+      // Revert to original snapshot
+      alert((error as ApiError).message);
+      setTodos(snapshot);
     }
   };
 
-  const handleDeleteAllCompleted = async () => {
-    const toDelete = todos.filter((todo) => todo.completed);
+  // Hanlder for multi-item deletion
+  const handleDeleteAllCompleted = async (): Promise<void> => {
+    const toDelete: Todo[] = todos.filter((todo: Todo) => todo.completed);
     if (toDelete.length === 0) {
       return;
     }
 
-    const updatedItems = structuredClone(
-      todos.filter((todo) => !todo.completed),
+    // Capture snapshot of original items
+    const originalItems: Todo[] = [...todos];
+
+    // Prepare updates and reorder
+    const { updates, reorderedItems } = reorderAndPrepareBulkUpdate(
+      originalItems.filter((todo: Todo) => !todo.completed),
     );
-    originalTodoValues.current = [...todos];
-
-    const bulkUpdates: BulkTodoPositionUpdate[] = [];
-    updatedItems.forEach((todo, index) => {
-      if (todo.position !== index) {
-        todo.position = index;
-        bulkUpdates.push({ id: todo.id, position: index });
-      }
-    });
-
-    setTodos(updatedItems);
+    setTodos(reorderedItems);
 
     try {
       await deleteTodoListApi(toDelete);
-      if (bulkUpdates.length > 0) {
-        await updateTodosApi(bulkUpdates);
+
+      // If the removed items are at the end, there won't be any updates here
+      if (updates.length > 0) {
+        await updateTodosApi(updates);
       }
     } catch (error) {
-      alert((error as Error).message);
-      setTodos(originalTodoValues.current);
-    } finally {
-      originalTodoValues.current = [];
+      // Revert to original snapshot
+      alert((error as ApiError).message);
+      setTodos(originalItems);
     }
   };
 
-  const handleReorder = async (draggedId: string, targetId: string) => {
+  // Handler for reordering after a drag and drop
+  const handleReorder = async (
+    draggedId: string,
+    targetId: string,
+  ): Promise<void> => {
     if (draggedId === targetId) {
       return;
     }
 
-    const originalMaster = [...todos];
-    const draggedIndex = todos.findIndex((t) => t.id === draggedId);
-    const targetIndex = todos.findIndex((t) => t.id === targetId);
+    // Find each item
+    const draggedIndex: number = todos.findIndex((t) => t.id === draggedId);
+    const targetIndex: number = todos.findIndex((t) => t.id === targetId);
 
     if (draggedIndex === -1 || targetIndex === -1) {
       return;
     }
 
-    const newMaster = [...todos];
-    const [movedItem] = newMaster.splice(draggedIndex, 1);
-    newMaster.splice(targetIndex, 0, movedItem);
+    const snapshot: Todo[] = [...todos];
+    const copy: Todo[] = [...todos];
 
-    const bulkUpdates: BulkTodoPositionUpdate[] = [];
-    const updatedMaster = newMaster.map((todo, index) => {
-      if (todo.position !== index) {
-        bulkUpdates.push({ id: todo.id, position: index });
-        return { ...todo, position: index };
-      }
-      return todo;
-    });
+    // Swap item positions
+    const [movedItem]: Todo[] = copy.splice(draggedIndex, 1);
+    copy.splice(targetIndex, 0, movedItem);
 
-    setTodos(updatedMaster);
+    // Prepare updates and reorder
+    const { updates, reorderedItems } = reorderAndPrepareBulkUpdate(copy);
+    setTodos(reorderedItems);
 
     try {
-      if (bulkUpdates.length > 0) {
-        await updateTodosApi(bulkUpdates);
+      // If the item is dropped back to it's original position, this won't trigger
+      if (updates.length > 0) {
+        await updateTodosApi(updates);
       }
     } catch (error) {
-      alert((error as Error).message);
-      setTodos(originalMaster);
+      // Revert to original snapshot
+      alert((error as ApiError).message);
+      setTodos(snapshot);
     }
   };
 
@@ -214,4 +215,22 @@ export function useTodos(userId: string): UseTodosReturn {
     handleDeleteAllCompleted,
     handleReorder,
   };
+}
+
+// Creates a new array with updated positions and prepares the update payload
+function reorderAndPrepareBulkUpdate(items: Todo[]): {
+  updates: BulkTodoPositionUpdate[];
+  reorderedItems: Todo[];
+} {
+  const updates: BulkTodoPositionUpdate[] = [];
+  const reorderedItems = items.map((todo: Todo, index: number) => {
+    // Ensure the position is only changed if the item actually moved
+    if (todo.position !== index) {
+      updates.push({ id: todo.id, position: index });
+      return { ...todo, position: index };
+    }
+    return todo;
+  });
+
+  return { updates, reorderedItems };
 }

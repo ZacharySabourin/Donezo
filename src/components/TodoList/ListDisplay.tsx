@@ -2,7 +2,7 @@ import { useState } from "react";
 import type ApiError from "../../types/ApiError";
 import type Todo from "../../types/Todo";
 
-import type { TodoCompletionUpdate, TodoTextUpdate } from "../../utils/TodoAPI";
+import type { TodoCompletionUpdate, TodoTextUpdate } from "../../services/TodoAPI";
 import ErrorMessage from "../ErrorMessage";
 import LoadingPlaceholder from "../LoadingPlaceholder";
 import TodoItem from "./TodoItem";
@@ -32,17 +32,19 @@ export default function ListDisplay({
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
+  // Caputure drag and hover ids on start
   const handleDragStart = (id: string) => {
     setDraggedId(id);
     setHoveredId(id);
   };
 
+  // Update hoveredId as the dragged item gets moves over others.
   const handleDragOver = (
     event: React.DragEvent<HTMLDivElement>,
     targetId: string,
   ) => {
     event.preventDefault();
-    if (!draggedId || draggedId === targetId) {
+    if (!draggedId) {
       return;
     }
 
@@ -50,6 +52,7 @@ export default function ListDisplay({
   };
 
   const handleDragEnd = async () => {
+    // No updates needed if item ends up in original position
     if (!draggedId || !hoveredId || draggedId === hoveredId) {
       return;
     }
@@ -57,6 +60,7 @@ export default function ListDisplay({
     const activeDraggedId = draggedId;
     const activeHoveredId = hoveredId;
 
+    // Reset values and set the saving state to true to prevent dragging while syncing with the server.
     setDraggedId(null);
     setHoveredId(null);
     setIsSaving(true);

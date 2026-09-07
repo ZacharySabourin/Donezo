@@ -1,3 +1,6 @@
+/**
+ * A custom error object used when an error is received from the server. Captures a message and the error status code.
+ */
 export default class ApiError extends Error {
   public readonly statusCode: number;
   public readonly message: string;
