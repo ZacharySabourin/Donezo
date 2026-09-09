@@ -33,7 +33,7 @@ export default function ThemeToggle() {
     <div className="theme-icon-wrapper">
       <button
         onClick={toggleTheme}
-        className="theme-icon gradient border-box round-btn interactive"
+        className="theme-icon align-center gradient border-box round-btn height-100 interactive"
       >
         {theme === "dark" ? (
           // Sun Icon (for Light Mode switch)

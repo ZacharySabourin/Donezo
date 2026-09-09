@@ -3,13 +3,11 @@ import type { TodoRequest } from "../../services/TodoAPI";
 
 type CreationFormProps = Readonly<{
   todoCount: number;
-  userId: string;
   handleCreateItem: (payload: TodoRequest) => Promise<void>;
 }>;
 
 export default function CreationForm({
   todoCount,
-  userId,
   handleCreateItem,
 }: CreationFormProps) {
   const [completed, setCompleted] = useState<boolean>(false);
@@ -25,7 +23,6 @@ export default function CreationForm({
 
     try {
       await handleCreateItem({
-        user_id: userId,
         text,
         position: todoCount,
         completed,
@@ -41,10 +38,10 @@ export default function CreationForm({
 
   return (
     <div className="row-item-wrapper">
-      <form onSubmit={handleSubmit} className="row-item flex-row-center">
+      <form onSubmit={handleSubmit} className="row-item align-center flex-row-center">
         <input
           type="checkbox"
-          className="completion-check round-btn border-box interactive"
+          className="completion-check round-btn height-100 border-box interactive"
           checked={completed}
           onChange={(e) => setCompleted(e.target.checked)}
         />

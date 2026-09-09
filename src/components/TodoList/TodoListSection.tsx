@@ -1,14 +1,14 @@
 import { useState } from "react";
+import { useAuth } from "../../hooks/useAuth";
 import { useTodos } from "../../hooks/useTodos";
 import CreationForm from "./CreationForm";
 import ListDisplay from "./ListDisplay";
 
 type FilterType = "All" | "Active" | "Completed";
 
-export default function TodoListSection({
-  userId,
-}: Readonly<{ userId: string }>) {
+export default function TodoListSection() {
   const [selectedFilter, setSelectedFilter] = useState<FilterType>("All");
+  const { user } = useAuth();
 
   // Destructure todos, load state, error state, and all handlers to pass down to child comonents
   const {
@@ -20,7 +20,7 @@ export default function TodoListSection({
     handleDeleteItem,
     handleDeleteAllCompleted,
     handleReorder,
-  } = useTodos(userId);
+  } = useTodos(user);
 
   // Filter list based on completion
   const filteredTodos = todos.filter((todo) => {
@@ -34,9 +34,8 @@ export default function TodoListSection({
   });
 
   return (
-    <div id="todo-list-section" className="flex-column-start">
+    <>
       <CreationForm
-        userId={userId}
         todoCount={filteredTodos.length}
         handleCreateItem={handleCreateItem}
       />
@@ -48,15 +47,15 @@ export default function TodoListSection({
         handleDeleteItem={handleDeleteItem}
         onReorder={handleReorder}
       />
-      <hr />
+      <hr className="width-60" />
       <div className="list-options row-item flex-row-center">
         <p>{filteredTodos.length} items left</p>
-        <form className="filter-group flex-row-center">
+        <form className="filter-group align-center flex-row-center">
           {(["All", "Active", "Completed"] as const).map(
             (filter: FilterType) => (
               <label
                 key={filter}
-                className="filter-choice gradient round-btn border-box interactive"
+                className="filter-choice align-center gradient round-btn height-100 border-box interactive"
               >
                 <input
                   type="radio"
@@ -72,13 +71,13 @@ export default function TodoListSection({
         </form>
 
         <button
-          className="round-btn gradient border-box interactive"
+          className="round-btn height-100 gradient border-box interactive"
           type="button"
           onClick={handleDeleteAllCompleted}
         >
           Clear Completed
         </button>
       </div>
-    </div>
+    </>
   );
 }

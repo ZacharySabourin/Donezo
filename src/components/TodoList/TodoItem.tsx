@@ -49,7 +49,7 @@ export default function TodoItem({
   }, [debouncedText]);
 
   return (
-    <div className="row-item flex-row-center">
+    <div className="row-item align-center flex-row-center">
       <input
         className="completion-check border-box interactive"
         type="checkbox"
@@ -63,7 +63,7 @@ export default function TodoItem({
         onChange={(e) => setText(e.target.value)}
       />
       <button
-        className="round-btn gradient border-box interactive"
+        className="round-btn height-100 gradient border-box interactive"
         type="button"
         onClick={() => handleDeleteItem(todo.id)}
       >
