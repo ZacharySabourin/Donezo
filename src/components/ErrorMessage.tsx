@@ -6,7 +6,7 @@ export default function ErrorMessage({
   return (
     <div className="error">
       <p>
-        {error?.message} Status: {error?.statusCode}
+        {error?.message}
       </p>
     </div>
   );

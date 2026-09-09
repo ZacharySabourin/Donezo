@@ -4,7 +4,7 @@ import type Todo from "../../types/Todo";
 
 import type { TodoCompletionUpdate, TodoTextUpdate } from "../../services/TodoAPI";
 import ErrorMessage from "../ErrorMessage";
-import LoadingPlaceholder from "../LoadingPlaceholder";
+import LoadingSpinner from "../LoadingSpinner";
 import TodoItem from "./TodoItem";
 
 type ListDisplayProps = Readonly<{
@@ -32,7 +32,7 @@ export default function ListDisplay({
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
-  // Caputure drag and hover ids on start
+  // Capture drag and hover ids on start
   const handleDragStart = (id: string) => {
     setDraggedId(id);
     setHoveredId(id);
@@ -70,7 +70,7 @@ export default function ListDisplay({
   };
 
   if (loading) {
-    return <LoadingPlaceholder />;
+    return <LoadingSpinner />;
   }
   if (error) {
     return <ErrorMessage error={error} />;
@@ -91,7 +91,7 @@ export default function ListDisplay({
               handleDeleteItem={handleDeleteItem}
             />
             <div
-              className="drag-indicator"
+              className="drag-indicator align-center"
               draggable={!isSaving}
               onDragStart={() => handleDragStart(todo.id)}
               onDragEnd={handleDragEnd}
