@@ -14,6 +14,7 @@ import {
   type TodoRequest,
   type TodoTextUpdate,
 } from "../services/TodoAPI";
+import type { UserProfile } from "../services/AuthAPI";
 
 /**
  * Return type for the useTodos() function. Contains a list of sorted Todos,
@@ -40,23 +41,23 @@ interface UseTodosReturn {
  * @param userId The current user's id
  * @returns A UseTodosReturn object
  */
-export function useTodos(userId: string): UseTodosReturn {
+export function useTodos(user: UserProfile | null): UseTodosReturn {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ApiError | null>(null);
 
-  // Use a callback since the list fetch is asynchronous code. Triggers on user id updates
+  // Use a callback since the list fetch is asynchronous code
   const fetch: () => Promise<void> = useCallback(async () => {
     try {
       setLoading(true);
-      const sortedTodos: Todo[] = await fetchSortedTodosApi(userId);
+      const sortedTodos: Todo[] = await fetchSortedTodosApi();
       setTodos(sortedTodos);
     } catch (error) {
       setError(error as ApiError);
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [user]);
 
   // Triggers on component mount, and whenever the userId changes.
   useEffect(() => {
@@ -122,7 +123,7 @@ export function useTodos(userId: string): UseTodosReturn {
     setTodos(reorderedItems);
 
     try {
-      await deleteTodoApi(userId, todoId);
+      await deleteTodoApi(todoId);
 
       // If the removed item is at the end, there won't be any updates here
       if (updates.length > 0) {
