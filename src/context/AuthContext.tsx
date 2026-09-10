@@ -1,7 +1,6 @@
 import {
   createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -15,24 +14,13 @@ import {
   type AuthRequest,
   type UserProfile,
 } from "../services/AuthAPI";
-import type ApiError from "../types/ApiError";
+import type { AuthContextType } from "../types/auth";
 
-interface AuthContextType {
-  user: UserProfile | null;
-  loading: boolean;
-  error: ApiError | null;
-  login: (formData: AuthRequest) => Promise<void>;
-  logout: () => Promise<void>;
-  signup: (formData: AuthRequest) => Promise<void>;
-  refetchAuth: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType | null>(null);
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<ApiError | null>(null);
 
   const checkAuthStatus = useCallback(async () => {
     try {
@@ -43,14 +31,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
       }
     } catch (error) {
-      setError(error as ApiError);
       setUser(null);
+      throw error;
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    // TODO: Figure out how we want to handle this error
     checkAuthStatus();
   }, [checkAuthStatus]);
 
@@ -60,8 +49,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userProfile = await loginApi(formData);
       setUser(userProfile);
     } catch (error) {
-      setError(error as ApiError);
       setUser(null);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -74,8 +63,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
       }
     } catch (error) {
-      setError(error as ApiError);
       setUser(null);
+      throw error;
     }
   };
 
@@ -83,10 +72,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
       await sendSignupApi(formData);
-    } catch (error) {
-      setError(error as ApiError);
-    } finally {
       setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      throw error;
     }
   };
 
@@ -94,7 +83,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return {
       user,
       loading,
-      error,
       login,
       logout,
       signup,
@@ -105,12 +93,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 };
