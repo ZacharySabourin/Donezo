@@ -11,6 +11,7 @@ import {
   getProfileApi,
   loginApi,
   logoutApi,
+  sendSignupApi,
   type AuthRequest,
   type UserProfile,
 } from "../services/AuthAPI";
@@ -22,6 +23,7 @@ interface AuthContextType {
   error: ApiError | null;
   login: (formData: AuthRequest) => Promise<void>;
   logout: () => Promise<void>;
+  signup: (formData: AuthRequest) => Promise<void>;
   refetchAuth: () => Promise<void>;
 }
 
@@ -52,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkAuthStatus();
   }, [checkAuthStatus]);
 
-  const login = useCallback(async (formData: AuthRequest) => {
+  const login = async (formData: AuthRequest) => {
     try {
       setLoading(true);
       const userProfile = await loginApi(formData);
@@ -63,9 +65,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  const logout = useCallback(async () => {
+  const logout = async () => {
     try {
       if (user) {
         await logoutApi();
@@ -75,7 +77,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setError(error as ApiError);
       setUser(null);
     }
-  }, []);
+  };
+
+  const signup = async (formData: AuthRequest) => {
+    try {
+      setLoading(true);
+      await sendSignupApi(formData);
+    } catch (error) {
+      setError(error as ApiError);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const contextValue = useMemo(() => {
     return {
@@ -84,6 +97,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       error,
       login,
       logout,
+      signup,
       refetchAuth: checkAuthStatus,
     };
   }, [user, loading]);
