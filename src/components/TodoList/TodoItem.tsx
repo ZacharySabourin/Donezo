@@ -1,27 +1,21 @@
 import { useEffect, useState } from "react";
 import useDebounce from "../../hooks/useDebounce";
+import { useTodoContext } from "../../hooks/useTodoContext";
 import useUpdateEffect from "../../hooks/useUpdateEffect";
-import type Todo from "../../types/Todo";
-import type { TodoCompletionUpdate, TodoTextUpdate } from "../../services/TodoAPI";
+import type {
+  TodoCompletionUpdate,
+  TodoTextUpdate,
+} from "../../services/TodoAPI";
+import type { Todo } from "../../types/todo";
+import { useToastContext } from "../../hooks/useToastContext";
+import type ApiError from "../../types/ApiError";
 
-type TodoItemProps = Readonly<{
-  todo: Todo;
-  handleUpdateItem: (
-    todoId: string,
-    originalValue: TodoCompletionUpdate | TodoTextUpdate,
-    updates: TodoCompletionUpdate | TodoTextUpdate,
-  ) => Promise<void>;
-  handleDeleteItem: (todoId: string) => Promise<void>;
-}>;
-
-export default function TodoItem({
-  todo,
-  handleUpdateItem,
-  handleDeleteItem,
-}: TodoItemProps) {
+export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
   const [completed, setCompleted] = useState<boolean>(todo.completed);
   const [text, setText] = useState<string>(todo.text);
   const debouncedText = useDebounce<string>(text);
+  const { handleUpdateItem, handleDeleteItem } = useTodoContext();
+  const { showError } = useToastContext();
 
   // Synchronize state when the parent updates the todo prop
   useEffect(() => {
@@ -29,23 +23,34 @@ export default function TodoItem({
     setText(todo.text);
   }, [todo.completed, todo.text]);
 
-  const handleCompletionChange = (updatedValue: boolean) => {
+  const handleCompletionChange = async (updatedValue: boolean) => {
     setCompleted(updatedValue);
 
     if (updatedValue !== todo.completed) {
       const original: TodoCompletionUpdate = { completed: todo.completed };
       const update: TodoCompletionUpdate = { completed: updatedValue };
-      handleUpdateItem(todo.id, original, update);
+      try {
+        await handleUpdateItem(todo.id, original, update);
+      } catch (error) {
+        showError((error as ApiError).message || "Completion check failed!");
+      }
     }
   };
 
   // If there are any changes after debouncing, trigger the update handler
   useUpdateEffect(() => {
-    if (debouncedText !== todo.text) {
-      const original: TodoTextUpdate = { text: todo.text };
-      const update: TodoTextUpdate = { text: debouncedText };
-      handleUpdateItem(todo.id, original, update);
-    }
+    const sendUpdate = async () => {
+      if (debouncedText !== todo.text) {
+        const original: TodoTextUpdate = { text: todo.text };
+        const update: TodoTextUpdate = { text: debouncedText };
+        try {
+          await handleUpdateItem(todo.id, original, update);
+        } catch (error) {
+          showError((error as ApiError).message || "Text update failed!");
+        }
+      }
+    };
+    sendUpdate();
   }, [debouncedText]);
 
   return (

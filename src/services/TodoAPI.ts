@@ -1,5 +1,5 @@
 import ApiError from "../types/ApiError";
-import type Todo from "../types/Todo";
+import type Todo from "../types/todo";
 
 const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
 

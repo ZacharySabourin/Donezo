@@ -1,7 +1,7 @@
-import { useAuth } from "../hooks/useAuth";
+import { useAuthContext } from "../../hooks/useAuthContext";
 
 export default function HeaderMenu() {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthContext();
   return (
     <div id="header" className="align-center">
       {user ? (

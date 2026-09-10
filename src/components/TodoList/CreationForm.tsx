@@ -1,30 +1,25 @@
 import { useState } from "react";
-import type { TodoRequest } from "../../services/TodoAPI";
+import { useToastContext } from "../../hooks/useToastContext";
+import { useTodoContext } from "../../hooks/useTodoContext";
 
-type CreationFormProps = Readonly<{
-  todoCount: number;
-  handleCreateItem: (payload: TodoRequest) => Promise<void>;
-}>;
-
-export default function CreationForm({
-  todoCount,
-  handleCreateItem,
-}: CreationFormProps) {
+export default function CreationForm() {
   const [completed, setCompleted] = useState<boolean>(false);
   const [text, setText] = useState<string>("");
+  const { showToast, showError } = useToastContext();
+  const { todos, handleCreateItem } = useTodoContext();
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // No request sent if the text is only spaces
     if (!text.trim()) {
+      showToast("Text cannot be empty!");
       return;
     }
 
     try {
       await handleCreateItem({
         text,
-        position: todoCount,
+        position: todos.length,
         completed,
       });
 
@@ -32,13 +27,16 @@ export default function CreationForm({
       setText("");
       setCompleted(false);
     } catch (error) {
-      alert((error as Error).message);
+      showError((error as Error).message || "Failed to create new item!");
     }
   }
 
   return (
     <div className="row-item-wrapper">
-      <form onSubmit={handleSubmit} className="row-item align-center flex-row-center">
+      <form
+        onSubmit={handleSubmit}
+        className="row-item align-center flex-row-center"
+      >
         <input
           type="checkbox"
           className="completion-check round-btn height-100 border-box interactive"

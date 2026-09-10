@@ -1,36 +1,17 @@
 import { useState } from "react";
-import type ApiError from "../../types/ApiError";
-import type Todo from "../../types/Todo";
-
-import type { TodoCompletionUpdate, TodoTextUpdate } from "../../services/TodoAPI";
-import ErrorMessage from "../ErrorMessage";
+import { useTodoContext } from "../../hooks/useTodoContext";
 import LoadingSpinner from "../LoadingSpinner";
 import TodoItem from "./TodoItem";
+import type { Todo } from "../../types/todo";
+import { useToastContext } from "../../hooks/useToastContext";
+import type ApiError from "../../types/ApiError";
 
-type ListDisplayProps = Readonly<{
-  todos: Todo[];
-  loading: boolean;
-  error: ApiError | null;
-  handleUpdateItem: (
-    todoId: string,
-    originalValue: TodoCompletionUpdate | TodoTextUpdate,
-    updates: TodoCompletionUpdate | TodoTextUpdate,
-  ) => Promise<void>;
-  handleDeleteItem: (todoId: string) => Promise<void>;
-  onReorder: (draggedId: string, targetId: string) => Promise<void>;
-}>;
-
-export default function ListDisplay({
-  todos,
-  loading,
-  error,
-  handleUpdateItem,
-  handleDeleteItem,
-  onReorder,
-}: ListDisplayProps) {
+export default function ListDisplay() {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const { showError } = useToastContext();
+  const { filteredTodos, loading, handleReorder } = useTodoContext();
 
   // Capture drag and hover ids on start
   const handleDragStart = (id: string) => {
@@ -65,31 +46,29 @@ export default function ListDisplay({
     setHoveredId(null);
     setIsSaving(true);
 
-    await onReorder(activeDraggedId, activeHoveredId);
-    setIsSaving(false);
+    try {
+      await handleReorder(activeDraggedId, activeHoveredId);
+    } catch (error) {
+      showError((error as ApiError).message || "Error reordering list!");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (loading) {
     return <LoadingSpinner />;
   }
-  if (error) {
-    return <ErrorMessage error={error} />;
-  }
 
   return (
     <div id="list-display" className="flex-column-start">
-      {todos.map((todo: Todo) => {
+      {filteredTodos.map((todo: Todo) => {
         return (
           <div
             key={todo.id}
             className="row-item-wrapper flex-row-start"
             onDragOver={(e) => handleDragOver(e, todo.id)}
           >
-            <TodoItem
-              todo={todo}
-              handleUpdateItem={handleUpdateItem}
-              handleDeleteItem={handleDeleteItem}
-            />
+            <TodoItem todo={todo} />
             <div
               className="drag-indicator align-center"
               draggable={!isSaving}
