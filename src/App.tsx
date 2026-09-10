@@ -1,16 +1,17 @@
 import "./App.css";
-import HeaderMenu from "./components/HeaderMenu";
 import MainContent from "./components/MainContent";
-import TitleCard from "./components/TitleCard";
-import { AuthProvider } from "./hooks/useAuth";
+import HeaderSection from "./components/header/HeaderSection";
+import { AuthProvider } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
 
 function App() {
   return (
-    <AuthProvider>
-      <HeaderMenu />
-      <TitleCard />
-      <MainContent />
-    </AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <HeaderSection />
+        <MainContent />
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 
