@@ -4,7 +4,6 @@ import {
   useTodoDispatchContext,
   useTodoStateContext,
 } from "../../hooks/useTodoContext";
-import type ApiError from "../../types/ApiError";
 import type { Todo } from "../../types/todo";
 import LoadingSpinner from "../LoadingSpinner";
 import TodoItem from "./TodoItem";
@@ -15,7 +14,7 @@ export default function ListDisplay() {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const { showError } = useToastContext();
   const { filteredTodos, loading } = useTodoStateContext();
-  const { handleReorder } = useTodoDispatchContext();
+  const { handleDragReorder } = useTodoDispatchContext();
 
   // Capture drag and hover ids on start
   const handleDragStart = (id: string) => {
@@ -50,13 +49,8 @@ export default function ListDisplay() {
     setHoveredId(null);
     setIsSaving(true);
 
-    try {
-      await handleReorder(activeDraggedId, activeHoveredId);
-    } catch (error) {
-      showError((error as ApiError).message || "Error reordering list!");
-    } finally {
-      setIsSaving(false);
-    }
+    await handleDragReorder(activeDraggedId, activeHoveredId);
+    setIsSaving(false);
   };
 
   if (loading) {

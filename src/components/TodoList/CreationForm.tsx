@@ -31,7 +31,7 @@ export default function CreationForm() {
       setText("");
       setCompleted(false);
     } catch (error) {
-      showError((error as Error).message || "Failed to create new item!");
+      showError((error as Error).message);
     }
   }
 

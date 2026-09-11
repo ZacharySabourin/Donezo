@@ -54,14 +54,6 @@ export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
     sendUpdate();
   }, [debouncedText]);
 
-  const handleDeleteButton = async () => {
-    try {
-      await handleDeleteItem(todo.id);
-    } catch (error) {
-      showError((error as ApiError).message || "Failed to delete item!");
-    }
-  };
-
   return (
     <div className="row-item align-center flex-row-center">
       <input
@@ -79,7 +71,7 @@ export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
       <button
         className="round-btn height-100 gradient border-box interactive"
         type="button"
-        onClick={() => handleDeleteButton()}
+        onClick={() => handleDeleteItem(todo.id)}
       >
         Delete
       </button>

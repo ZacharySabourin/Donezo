@@ -15,6 +15,8 @@ import {
   type UserProfile,
 } from "../services/authAPI";
 import type { AuthDispatch, AuthState } from "../types/auth";
+import type ApiError from "../types/ApiError";
+import { useToastContext } from "../hooks/useToastContext";
 
 export const AuthStateContext = createContext<AuthState | null>(null);
 export const AuthDispatchContext = createContext<AuthDispatch | null>(null);
@@ -22,6 +24,8 @@ export const AuthDispatchContext = createContext<AuthDispatch | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const { showError } = useToastContext();
 
   const refetchAuth = useCallback(async () => {
     try {
@@ -33,14 +37,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       setUser(null);
-      throw error;
+      const apiError = error as ApiError;
+      console.error(`${apiError.message}: ${apiError.statusCode}`);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    // TODO: Figure out how we want to handle this error
     refetchAuth();
   }, [refetchAuth]);
 
@@ -51,7 +55,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(userProfile);
     } catch (error) {
       setUser(null);
-      throw error;
+      const apiError = error as ApiError;
+      console.error(`${apiError.message}: ${apiError.statusCode}`);
+      throw apiError;
     } finally {
       setLoading(false);
     }
@@ -63,7 +69,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
     } catch (error) {
       setUser(null);
-      throw error;
+      const apiError = error as ApiError;
+      console.error(`${apiError.message}: ${apiError.statusCode}`);
+      showError(apiError.message);
     }
   }, [user]);
 
@@ -74,7 +82,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      throw error;
+      const apiError = error as ApiError;
+      console.error(`${apiError.message}: ${apiError.statusCode}`);
+      throw apiError;
     }
   }, []);
 

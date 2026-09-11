@@ -3,10 +3,11 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
-import type { UserProfile } from "../services/authAPI";
+import { useToastContext } from "../hooks/useToastContext";
 import {
   createTodoApi,
   deleteTodoApi,
@@ -19,18 +20,21 @@ import {
   type TodoRequest,
   type TodoTextUpdate,
 } from "../services/todoAPI";
+import type ApiError from "../types/ApiError";
 import type { FilterType, Todo, TodoDispatch, TodoState } from "../types/todo";
 
 export const TodoStateContext = createContext<TodoState | null>(null);
 export const TodoDispatchContext = createContext<TodoDispatch | null>(null);
 
-export function TodoProvider({
-  user,
-  children,
-}: Readonly<{ user: UserProfile | null; children: ReactNode }>) {
+export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedFilter, setSelectedFilter] = useState<FilterType>("All");
+
+  const todosRef = useRef(todos);
+  todosRef.current = todos;
+
+  const { showError } = useToastContext();
 
   // Use a callback since the list fetch is asynchronous code
   const fetch: () => Promise<void> = useCallback(async () => {
@@ -38,14 +42,16 @@ export function TodoProvider({
       setLoading(true);
       const sortedTodos: Todo[] = await fetchSortedTodosApi();
       setTodos(sortedTodos);
-      setLoading(false);
     } catch (error) {
+      const apiError = error as ApiError;
+      console.error(`${apiError.message}: ${apiError.statusCode}`);
+      showError(apiError.message);
+    } finally {
       setLoading(false);
-      throw error;
     }
-  }, [user?.id]);
+  }, []);
 
-  // Triggers on component mount, and whenever the userId changes.
+  // Triggers on component mount
   useEffect(() => {
     fetch();
   }, [fetch]);
@@ -63,16 +69,22 @@ export function TodoProvider({
     });
   }, [todos, selectedFilter]);
 
-  // Handler for item creation. Triggers an alert on failure
+  // Handler for item creation. Error bubbled up to component to allow for form value retention
   const handleCreateItem = useCallback(
     async (payload: TodoRequest): Promise<void> => {
-      const newTodo: Todo = await createTodoApi(payload);
-      setTodos((prev: Todo[]) => [...prev, newTodo]);
+      try {
+        const newTodo: Todo = await createTodoApi(payload);
+        setTodos((prev: Todo[]) => [...prev, newTodo]);
+      } catch (error) {
+        const apiError = error as ApiError;
+        console.error(`${apiError.message}: ${apiError.statusCode}`);
+        throw error;
+      }
     },
     [],
   );
 
-  // Handler for single item update.
+  // Handler for single item update. Error bubbled up to component to allow for field value retention
   const handleUpdateItem = useCallback(
     async (
       todoId: string,
@@ -95,6 +107,8 @@ export function TodoProvider({
             todo.id === todoId ? { ...todo, ...originalValue } : todo,
           ),
         );
+        const apiError = error as ApiError;
+        console.error(`${apiError.message}: ${apiError.statusCode}`);
         throw error;
       }
     },
@@ -104,16 +118,19 @@ export function TodoProvider({
   // Handler for single item deletion.
   const handleDeleteItem = useCallback(
     async (todoId: string): Promise<void> => {
-      const index: number = todos.findIndex((todo: Todo) => todo.id === todoId);
+      const current = todosRef.current;
+      const index: number = current.findIndex(
+        (todo: Todo) => todo.id === todoId,
+      );
       if (index === -1) {
         return;
       }
 
       // Snapshot of original state
-      const snapshot: Todo[] = [...todos];
+      const snapshot: Todo[] = [...current];
 
       // Remove item
-      const copy: Todo[] = [...todos];
+      const copy: Todo[] = [...current];
       copy.splice(index, 1);
 
       // Prepare updates and reorder
@@ -130,21 +147,24 @@ export function TodoProvider({
       } catch (error) {
         // Revert to original snapshot
         setTodos(snapshot);
-        throw error;
+        const apiError = error as ApiError;
+        console.error(`${apiError.message}: ${apiError.statusCode}`);
+        showError(apiError.message);
       }
     },
-    [todos],
+    [],
   );
 
   // Handler for multi-item deletion
   const handleDeleteAllCompleted = useCallback(async (): Promise<void> => {
-    const toDelete: Todo[] = todos.filter((todo: Todo) => todo.completed);
+    const current = todosRef.current;
+    const toDelete: Todo[] = current.filter((todo: Todo) => todo.completed);
     if (toDelete.length === 0) {
       return;
     }
 
     // Capture snapshot of original items
-    const snapshot: Todo[] = [...todos];
+    const snapshot: Todo[] = [...current];
 
     // Prepare updates and reorder
     const { updates, reorderedItems } = reorderAndPrepareBulkUpdate(
@@ -162,27 +182,31 @@ export function TodoProvider({
     } catch (error) {
       // Revert to original snapshot
       setTodos(snapshot);
-      throw error;
+      const apiError = error as ApiError;
+      console.error(`${apiError.message}: ${apiError.statusCode}`);
+      showError(apiError.message);
     }
-  }, [todos]);
+  }, []);
 
   // Handler for reordering after a drag and drop
-  const handleReorder = useCallback(
+  const handleDragReorder = useCallback(
     async (draggedId: string, targetId: string): Promise<void> => {
       if (draggedId === targetId) {
         return;
       }
 
+      const current = todosRef.current;
+
       // Find each item
-      const draggedIndex: number = todos.findIndex((t) => t.id === draggedId);
-      const targetIndex: number = todos.findIndex((t) => t.id === targetId);
+      const draggedIndex: number = current.findIndex((t) => t.id === draggedId);
+      const targetIndex: number = current.findIndex((t) => t.id === targetId);
 
       if (draggedIndex === -1 || targetIndex === -1) {
         return;
       }
 
-      const snapshot: Todo[] = [...todos];
-      const copy: Todo[] = [...todos];
+      const snapshot: Todo[] = [...current];
+      const copy: Todo[] = [...current];
 
       // Swap item positions
       const [movedItem]: Todo[] = copy.splice(draggedIndex, 1);
@@ -200,10 +224,12 @@ export function TodoProvider({
       } catch (error) {
         // Revert to original snapshot
         setTodos(snapshot);
-        throw error;
+        const apiError = error as ApiError;
+        console.error(`${apiError.message}: ${apiError.statusCode}`);
+        showError(apiError.message);
       }
     },
-    [todos],
+    [],
   );
 
   const stateContext: TodoState = useMemo(() => {
@@ -217,14 +243,14 @@ export function TodoProvider({
       handleUpdateItem,
       handleDeleteItem,
       handleDeleteAllCompleted,
-      handleReorder,
+      handleDragReorder,
     };
   }, [
     handleCreateItem,
     handleUpdateItem,
     handleDeleteItem,
     handleDeleteAllCompleted,
-    handleReorder,
+    handleDragReorder,
   ]);
 
   return (

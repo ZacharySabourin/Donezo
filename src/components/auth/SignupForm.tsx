@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useToastContext } from "../../hooks/useToastContext";
-import type ApiError from "../../types/ApiError";
 import { useAuthDispatchContext } from "../../hooks/useAuthContext";
+import { useToastContext } from "../../hooks/useToastContext";
 
 export default function SignupForm({
   buttonText,
@@ -46,7 +45,7 @@ export default function SignupForm({
       setUsername("");
       setPassword("");
     } catch (error) {
-      showError((error as ApiError).message || "Account creation failed!");
+      showError((error as Error).message);
     }
   };
 

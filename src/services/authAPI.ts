@@ -22,7 +22,7 @@ export async function loginApi(payload: AuthRequest): Promise<UserProfile> {
     credentials: "include",
   }).then((response: Response) => {
     if (!response.ok) {
-      throw new ApiError("Error logging in", response.status);
+      throw new ApiError("Failed to Login!", response.status);
     }
     return response.json() as Promise<UserProfile>;
   });
@@ -33,7 +33,7 @@ export async function logoutApi(): Promise<void> {
     method: "POST",
   }).then((response: Response) => {
     if (!response.ok) {
-      throw new ApiError("Error logging out", response.status);
+      throw new ApiError("Failed to Logout!", response.status);
     }
   });
 }
@@ -47,7 +47,7 @@ export async function sendSignupApi(payload: AuthRequest): Promise<void> {
     body: JSON.stringify(payload),
   }).then((response: Response) => {
     if (!response.ok) {
-      throw new ApiError("Error signing up", response.status);
+      throw new ApiError("Account creation failed!", response.status);
     }
   });
 }
@@ -57,8 +57,8 @@ export async function getProfileApi(): Promise<UserProfile | null> {
     method: "GET",
     credentials: "include",
   }).then((response: Response) => {
-    if (!response.ok && response.status != 403) {
-      throw new ApiError("Error fetching profile", response.status);
+    if (!response.ok) {
+      throw new ApiError("No profile found!", response.status);
     }
     return response.json() as Promise<UserProfile>;
   });

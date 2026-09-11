@@ -35,5 +35,5 @@ export interface TodoDispatch {
   ) => Promise<void>;
   handleDeleteItem: (todoId: string) => Promise<void>;
   handleDeleteAllCompleted: () => Promise<void>;
-  handleReorder: (draggedId: string, targetId: string) => Promise<void>;
+  handleDragReorder: (draggedId: string, targetId: string) => Promise<void>;
 }

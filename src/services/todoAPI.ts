@@ -51,7 +51,7 @@ export async function fetchSortedTodosApi(): Promise<Todo[]> {
   })
     .then((response: Response) => {
       if (!response.ok) {
-        throw new ApiError("Error fetching Todos!", response.status);
+        throw new ApiError("Failed to fetch Todos!", response.status);
       }
       return response.json() as Promise<Todo[]>;
     })
@@ -79,7 +79,7 @@ export async function createTodoApi(payload: TodoRequest): Promise<Todo> {
     body: JSON.stringify(payload),
   }).then((response: Response) => {
     if (!response.ok) {
-      throw new ApiError("Error creating new Todo", response.status);
+      throw new ApiError("Failed to create new Todo!", response.status);
     }
     return response.json() as Promise<Todo>;
   });
@@ -105,7 +105,7 @@ export async function updateTodoApi(
     body: JSON.stringify(updates),
   }).then((response: Response) => {
     if (!response.ok) {
-      throw new ApiError("Error updating Todo", response.status);
+      throw new ApiError("Failed to update Todo!", response.status);
     }
   });
 }
@@ -128,7 +128,7 @@ export async function updateTodosApi(
     body: JSON.stringify(updates),
   }).then((response: Response) => {
     if (!response.ok) {
-      throw new ApiError("Error updating Todos", response.status);
+      throw new ApiError("Error reordering Todos!", response.status);
     }
   });
 }
@@ -148,7 +148,7 @@ export async function deleteTodoApi(todoId: string): Promise<void> {
     credentials: "include",
   }).then((response: Response) => {
     if (!response.ok) {
-      throw new ApiError("Error deleting Todo", response.status);
+      throw new ApiError("Failed to delete item!", response.status);
     }
   });
 }
@@ -169,7 +169,10 @@ export async function deleteTodoListApi(toDelete: Todo[]): Promise<void> {
     body: JSON.stringify(toDelete),
   }).then((response: Response) => {
     if (!response.ok) {
-      throw new ApiError("Error deleting Todos", response.status);
+      throw new ApiError(
+        "Failed to delete all completed items!",
+        response.status,
+      );
     }
   });
 }

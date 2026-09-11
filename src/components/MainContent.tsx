@@ -14,7 +14,7 @@ export default function MainContent() {
   return (
     <div className="flex-column-start main-content">
       {user ? (
-        <TodoProvider user={user}>
+        <TodoProvider>
           <TodoListSection />
         </TodoProvider>
       ) : (
