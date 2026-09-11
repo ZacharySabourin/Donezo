@@ -1,13 +1,25 @@
-import { useTodoContext } from "../../hooks/useTodoContext";
+import { useToastContext } from "../../hooks/useToastContext";
+import {
+  useTodoDispatchContext,
+  useTodoStateContext,
+} from "../../hooks/useTodoContext";
 import type { FilterType } from "../../types/todo";
 
 export default function ListOptions() {
-  const {
-    filteredTodos,
-    selectedFilter,
-    setSelectedFilter,
-    handleDeleteAllCompleted,
-  } = useTodoContext();
+  const { filteredTodos, selectedFilter } = useTodoStateContext();
+  const { setSelectedFilter, handleDeleteAllCompleted } =
+    useTodoDispatchContext();
+  const { showError } = useToastContext();
+
+  const handleDeleteButton = async () => {
+    try {
+      await handleDeleteAllCompleted();
+    } catch (error) {
+      showError(
+        (error as Error).message || "Failed to delete all completed items!",
+      );
+    }
+  };
 
   return (
     <div className="list-options row-item flex-row-center">
@@ -33,7 +45,7 @@ export default function ListOptions() {
       <button
         className="round-btn height-100 gradient border-box interactive"
         type="button"
-        onClick={handleDeleteAllCompleted}
+        onClick={() => handleDeleteButton()}
       >
         Clear Completed
       </button>

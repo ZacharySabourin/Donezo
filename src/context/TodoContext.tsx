@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { UserProfile } from "../services/AuthAPI";
+import type { UserProfile } from "../services/authAPI";
 import {
   createTodoApi,
   deleteTodoApi,
@@ -18,10 +18,11 @@ import {
   type TodoCompletionUpdate,
   type TodoRequest,
   type TodoTextUpdate,
-} from "../services/TodoAPI";
-import type { FilterType, Todo, TodoContextType } from "../types/todo";
+} from "../services/todoAPI";
+import type { FilterType, Todo, TodoDispatch, TodoState } from "../types/todo";
 
-export const TodoContext = createContext<TodoContextType | null>(null);
+export const TodoStateContext = createContext<TodoState | null>(null);
+export const TodoDispatchContext = createContext<TodoDispatch | null>(null);
 
 export function TodoProvider({
   user,
@@ -103,23 +104,28 @@ export function TodoProvider({
   // Handler for single item deletion.
   const handleDeleteItem = useCallback(
     async (todoId: string): Promise<void> => {
-      let snapshot: Todo[] = [];
-      let updatesPayload: BulkTodoPositionUpdate[] = [];
+      const index: number = todos.findIndex((todo: Todo) => todo.id === todoId);
+      if (index === -1) {
+        return;
+      }
 
-      setTodos((prev) => {
-        snapshot = prev;
-        const copy = prev.filter((todo) => todo.id !== todoId);
-        const { updates, reorderedItems } = reorderAndPrepareBulkUpdate(copy);
-        updatesPayload = updates;
-        return reorderedItems;
-      });
+      // Snapshot of original state
+      const snapshot: Todo[] = [...todos];
+
+      // Remove item
+      const copy: Todo[] = [...todos];
+      copy.splice(index, 1);
+
+      // Prepare updates and reorder
+      const { updates, reorderedItems } = reorderAndPrepareBulkUpdate(copy);
+      setTodos(reorderedItems);
 
       try {
         await deleteTodoApi(todoId);
 
         // If the removed item is at the end, there won't be any updates here
-        if (updatesPayload.length > 0) {
-          await updateTodosApi(updatesPayload);
+        if (updates.length > 0) {
+          await updateTodosApi(updates);
         }
       } catch (error) {
         // Revert to original snapshot
@@ -127,46 +133,38 @@ export function TodoProvider({
         throw error;
       }
     },
-    [],
+    [todos],
   );
 
-  // Hanlder for multi-item deletion
+  // Handler for multi-item deletion
   const handleDeleteAllCompleted = useCallback(async (): Promise<void> => {
-    let snapshot: Todo[] = [];
-    let toDelete: Todo[] = [];
-    let updatesPayload: BulkTodoPositionUpdate[] = [];
-
-    setTodos((prev) => {
-      snapshot = prev;
-      toDelete = prev.filter((todo) => todo.completed);
-      if (toDelete.length === 0) {
-        return prev;
-      }
-
-      const activeTodos = prev.filter((todo) => !todo.completed);
-      const { updates, reorderedItems } =
-        reorderAndPrepareBulkUpdate(activeTodos);
-      updatesPayload = updates;
-      return reorderedItems;
-    });
-
+    const toDelete: Todo[] = todos.filter((todo: Todo) => todo.completed);
     if (toDelete.length === 0) {
       return;
     }
+
+    // Capture snapshot of original items
+    const snapshot: Todo[] = [...todos];
+
+    // Prepare updates and reorder
+    const { updates, reorderedItems } = reorderAndPrepareBulkUpdate(
+      snapshot.filter((todo: Todo) => !todo.completed),
+    );
+    setTodos(reorderedItems);
 
     try {
       await deleteTodoListApi(toDelete);
 
       // If the removed items are at the end, there won't be any updates here
-      if (updatesPayload.length > 0) {
-        await updateTodosApi(updatesPayload);
+      if (updates.length > 0) {
+        await updateTodosApi(updates);
       }
     } catch (error) {
       // Revert to original snapshot
       setTodos(snapshot);
       throw error;
     }
-  }, []);
+  }, [todos]);
 
   // Handler for reordering after a drag and drop
   const handleReorder = useCallback(
@@ -175,31 +173,29 @@ export function TodoProvider({
         return;
       }
 
-      let snapshot: Todo[] = [];
-      let updatesPayload: BulkTodoPositionUpdate[] = [];
+      // Find each item
+      const draggedIndex: number = todos.findIndex((t) => t.id === draggedId);
+      const targetIndex: number = todos.findIndex((t) => t.id === targetId);
 
-      setTodos((prev) => {
-        const draggedIndex = prev.findIndex((t) => t.id === draggedId);
-        const targetIndex = prev.findIndex((t) => t.id === targetId);
+      if (draggedIndex === -1 || targetIndex === -1) {
+        return;
+      }
 
-        if (draggedIndex === -1 || targetIndex === -1) {
-          return prev;
-        }
+      const snapshot: Todo[] = [...todos];
+      const copy: Todo[] = [...todos];
 
-        snapshot = prev;
-        const copy = [...prev];
-        const [movedItem] = copy.splice(draggedIndex, 1);
-        copy.splice(targetIndex, 0, movedItem);
+      // Swap item positions
+      const [movedItem]: Todo[] = copy.splice(draggedIndex, 1);
+      copy.splice(targetIndex, 0, movedItem);
 
-        const { updates, reorderedItems } = reorderAndPrepareBulkUpdate(copy);
-        updatesPayload = updates;
-        return reorderedItems;
-      });
+      // Prepare updates and reorder
+      const { updates, reorderedItems } = reorderAndPrepareBulkUpdate(copy);
+      setTodos(reorderedItems);
 
       try {
         // If the item is dropped back to it's original position, this won't trigger
-        if (updatesPayload.length > 0) {
-          await updateTodosApi(updatesPayload);
+        if (updates.length > 0) {
+          await updateTodosApi(updates);
         }
       } catch (error) {
         // Revert to original snapshot
@@ -207,16 +203,16 @@ export function TodoProvider({
         throw error;
       }
     },
-    [],
+    [todos],
   );
 
-  const contextValue = useMemo(() => {
+  const stateContext: TodoState = useMemo(() => {
+    return { todos, filteredTodos, selectedFilter, loading };
+  }, [todos, filteredTodos, selectedFilter, loading]);
+
+  const dispatchContext: TodoDispatch = useMemo(() => {
     return {
-      todos,
-      filteredTodos,
-      selectedFilter,
       setSelectedFilter,
-      loading,
       handleCreateItem,
       handleUpdateItem,
       handleDeleteItem,
@@ -224,10 +220,6 @@ export function TodoProvider({
       handleReorder,
     };
   }, [
-    todos,
-    filteredTodos,
-    selectedFilter,
-    loading,
     handleCreateItem,
     handleUpdateItem,
     handleDeleteItem,
@@ -236,7 +228,11 @@ export function TodoProvider({
   ]);
 
   return (
-    <TodoContext.Provider value={contextValue}>{children}</TodoContext.Provider>
+    <TodoStateContext.Provider value={stateContext}>
+      <TodoDispatchContext.Provider value={dispatchContext}>
+        {children}
+      </TodoDispatchContext.Provider>
+    </TodoStateContext.Provider>
   );
 }
 

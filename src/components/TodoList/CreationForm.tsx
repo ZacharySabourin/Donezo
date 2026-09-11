@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { useToastContext } from "../../hooks/useToastContext";
-import { useTodoContext } from "../../hooks/useTodoContext";
+import {
+  useTodoDispatchContext,
+  useTodoStateContext,
+} from "../../hooks/useTodoContext";
 
 export default function CreationForm() {
   const [completed, setCompleted] = useState<boolean>(false);
   const [text, setText] = useState<string>("");
   const { showToast, showError } = useToastContext();
-  const { todos, handleCreateItem } = useTodoContext();
+  const { todos } = useTodoStateContext();
+  const { handleCreateItem } = useTodoDispatchContext();
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();

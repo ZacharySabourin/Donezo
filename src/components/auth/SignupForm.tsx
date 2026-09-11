@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useAuthContext } from "../../hooks/useAuthContext";
-import type ApiError from "../../types/ApiError";
 import { useToastContext } from "../../hooks/useToastContext";
+import type ApiError from "../../types/ApiError";
+import { useAuthDispatchContext } from "../../hooks/useAuthContext";
 
 export default function SignupForm({
   buttonText,
@@ -9,7 +9,7 @@ export default function SignupForm({
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const { signup } = useAuthContext();
+  const { signup } = useAuthDispatchContext();
   const { showSuccess, showError } = useToastContext();
 
   const handleAuth = async (e: React.SyntheticEvent<HTMLFormElement>) => {

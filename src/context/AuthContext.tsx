@@ -13,16 +13,17 @@ import {
   sendSignupApi,
   type AuthRequest,
   type UserProfile,
-} from "../services/AuthAPI";
-import type { AuthContextType } from "../types/auth";
+} from "../services/authAPI";
+import type { AuthDispatch, AuthState } from "../types/auth";
 
-export const AuthContext = createContext<AuthContextType | null>(null);
+export const AuthStateContext = createContext<AuthState | null>(null);
+export const AuthDispatchContext = createContext<AuthDispatch | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const checkAuthStatus = useCallback(async () => {
+  const refetchAuth = useCallback(async () => {
     try {
       const userProfile: UserProfile | null = await getProfileApi();
       if (userProfile) {
@@ -40,10 +41,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // TODO: Figure out how we want to handle this error
-    checkAuthStatus();
-  }, [checkAuthStatus]);
+    refetchAuth();
+  }, [refetchAuth]);
 
-  const login = async (formData: AuthRequest) => {
+  const login = useCallback(async (formData: AuthRequest) => {
     try {
       setLoading(true);
       const userProfile = await loginApi(formData);
@@ -54,21 +55,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
-      if (user) {
-        await logoutApi();
-        setUser(null);
-      }
+      await logoutApi();
+      setUser(null);
     } catch (error) {
       setUser(null);
       throw error;
     }
-  };
+  }, [user]);
 
-  const signup = async (formData: AuthRequest) => {
+  const signup = useCallback(async (formData: AuthRequest) => {
     try {
       setLoading(true);
       await sendSignupApi(formData);
@@ -77,20 +76,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
       throw error;
     }
-  };
+  }, []);
 
-  const contextValue = useMemo(() => {
+  const stateContext: AuthState = useMemo(() => {
     return {
       user,
       loading,
-      login,
-      logout,
-      signup,
-      refetchAuth: checkAuthStatus,
     };
   }, [user, loading]);
 
+  const dispatchContext: AuthDispatch = useMemo(() => {
+    return {
+      login,
+      logout,
+      signup,
+      refetchAuth,
+    };
+  }, [login, logout, signup, refetchAuth]);
+
   return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+    <AuthStateContext.Provider value={stateContext}>
+      <AuthDispatchContext.Provider value={dispatchContext}>
+        {children}
+      </AuthDispatchContext.Provider>
+    </AuthStateContext.Provider>
   );
 };

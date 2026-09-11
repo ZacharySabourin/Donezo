@@ -1,17 +1,21 @@
 import { useState } from "react";
-import { useTodoContext } from "../../hooks/useTodoContext";
+import { useToastContext } from "../../hooks/useToastContext";
+import {
+  useTodoDispatchContext,
+  useTodoStateContext,
+} from "../../hooks/useTodoContext";
+import type ApiError from "../../types/ApiError";
+import type { Todo } from "../../types/todo";
 import LoadingSpinner from "../LoadingSpinner";
 import TodoItem from "./TodoItem";
-import type { Todo } from "../../types/todo";
-import { useToastContext } from "../../hooks/useToastContext";
-import type ApiError from "../../types/ApiError";
 
 export default function ListDisplay() {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const { showError } = useToastContext();
-  const { filteredTodos, loading, handleReorder } = useTodoContext();
+  const { filteredTodos, loading } = useTodoStateContext();
+  const { handleReorder } = useTodoDispatchContext();
 
   // Capture drag and hover ids on start
   const handleDragStart = (id: string) => {

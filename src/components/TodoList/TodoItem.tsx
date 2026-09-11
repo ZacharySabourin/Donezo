@@ -1,20 +1,21 @@
 import { useEffect, useState } from "react";
 import useDebounce from "../../hooks/useDebounce";
-import { useTodoContext } from "../../hooks/useTodoContext";
+import { useToastContext } from "../../hooks/useToastContext";
 import useUpdateEffect from "../../hooks/useUpdateEffect";
 import type {
   TodoCompletionUpdate,
   TodoTextUpdate,
-} from "../../services/TodoAPI";
-import type { Todo } from "../../types/todo";
-import { useToastContext } from "../../hooks/useToastContext";
+} from "../../services/todoAPI";
 import type ApiError from "../../types/ApiError";
+import type { Todo } from "../../types/todo";
+import { useTodoDispatchContext } from "../../hooks/useTodoContext";
 
 export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
   const [completed, setCompleted] = useState<boolean>(todo.completed);
   const [text, setText] = useState<string>(todo.text);
   const debouncedText = useDebounce<string>(text);
-  const { handleUpdateItem, handleDeleteItem } = useTodoContext();
+
+  const { handleUpdateItem, handleDeleteItem } = useTodoDispatchContext();
   const { showError } = useToastContext();
 
   // Synchronize state when the parent updates the todo prop
@@ -53,6 +54,14 @@ export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
     sendUpdate();
   }, [debouncedText]);
 
+  const handleDeleteButton = async () => {
+    try {
+      await handleDeleteItem(todo.id);
+    } catch (error) {
+      showError((error as ApiError).message || "Failed to delete item!");
+    }
+  };
+
   return (
     <div className="row-item align-center flex-row-center">
       <input
@@ -70,7 +79,7 @@ export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
       <button
         className="round-btn height-100 gradient border-box interactive"
         type="button"
-        onClick={() => handleDeleteItem(todo.id)}
+        onClick={() => handleDeleteButton()}
       >
         Delete
       </button>

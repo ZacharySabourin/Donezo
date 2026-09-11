@@ -2,7 +2,7 @@ import type {
   TodoCompletionUpdate,
   TodoRequest,
   TodoTextUpdate,
-} from "../services/TodoAPI";
+} from "../services/todoAPI";
 
 /**
  * Todo object. Contains, text, position, completion check, and unique ids for itself and the user.
@@ -18,12 +18,15 @@ export interface Todo {
 
 export type FilterType = "All" | "Active" | "Completed";
 
-export interface TodoContextType {
+export interface TodoState {
   todos: Todo[];
   filteredTodos: Todo[];
   selectedFilter: FilterType;
-  setSelectedFilter: React.Dispatch<React.SetStateAction<FilterType>>;
   loading: boolean;
+}
+
+export interface TodoDispatch {
+  setSelectedFilter: React.Dispatch<React.SetStateAction<FilterType>>;
   handleCreateItem: (payload: TodoRequest) => Promise<void>;
   handleUpdateItem: (
     todoId: string,
@@ -31,6 +34,6 @@ export interface TodoContextType {
     updates: TodoCompletionUpdate | TodoTextUpdate,
   ) => Promise<void>;
   handleDeleteItem: (todoId: string) => Promise<void>;
-  handleDeleteAllCompleted: () => void;
+  handleDeleteAllCompleted: () => Promise<void>;
   handleReorder: (draggedId: string, targetId: string) => Promise<void>;
 }

@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { useAuthContext } from "../../hooks/useAuthContext";
 import { useToastContext } from "../../hooks/useToastContext";
 import type ApiError from "../../types/ApiError";
+import { useAuthDispatchContext } from "../../hooks/useAuthContext";
 
 export default function LoginForm({
   buttonText,
 }: Readonly<{ buttonText: string }>) {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const { login } = useAuthContext();
+  const { login } = useAuthDispatchContext();
   const { showSuccess, showError } = useToastContext();
 
   const handleAuth = async (e: React.SyntheticEvent<HTMLFormElement>) => {

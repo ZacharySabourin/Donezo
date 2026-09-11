@@ -1,11 +1,11 @@
-import { useAuthContext } from "../hooks/useAuthContext";
-import AuthForm from "./auth/AuthForm";
 import { TodoProvider } from "../context/TodoContext";
+import { useAuthStateContext } from "../hooks/useAuthContext";
+import AuthForm from "./auth/AuthForm";
 import LoadingSpinner from "./LoadingSpinner";
 import TodoListSection from "./TodoList/TodoListSection";
 
 export default function MainContent() {
-  const { user, loading } = useAuthContext();
+  const { user, loading } = useAuthStateContext();
 
   if (loading) {
     return <LoadingSpinner />;
