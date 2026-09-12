@@ -1,33 +1,30 @@
 import { useState } from "react";
-import type { TodoRequest } from "../../services/TodoAPI";
+import { useToastContext } from "../../hooks/useToastContext";
+import {
+  useTodoDispatchContext,
+  useTodoStateContext,
+} from "../../hooks/useTodoContext";
 
-type CreationFormProps = Readonly<{
-  todoCount: number;
-  userId: string;
-  handleCreateItem: (payload: TodoRequest) => Promise<void>;
-}>;
-
-export default function CreationForm({
-  todoCount,
-  userId,
-  handleCreateItem,
-}: CreationFormProps) {
+export default function CreationForm() {
   const [completed, setCompleted] = useState<boolean>(false);
   const [text, setText] = useState<string>("");
+  const { showToast, showError } = useToastContext();
+  const { todos } = useTodoStateContext();
+  const { handleCreateItem } = useTodoDispatchContext();
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // No request sent if the text is only spaces
     if (!text.trim()) {
+      showToast("Text cannot be empty!");
       return;
     }
 
+    //Catch error here to allow for retention of values
     try {
       await handleCreateItem({
-        user_id: userId,
         text,
-        position: todoCount,
+        position: todos.length,
         completed,
       });
 
@@ -35,16 +32,19 @@ export default function CreationForm({
       setText("");
       setCompleted(false);
     } catch (error) {
-      alert((error as Error).message);
+      showError((error as Error).message);
     }
   }
 
   return (
     <div className="row-item-wrapper">
-      <form onSubmit={handleSubmit} className="row-item flex-row-center">
+      <form
+        onSubmit={handleSubmit}
+        className="row-item align-center flex-row-center"
+      >
         <input
           type="checkbox"
-          className="completion-check round-btn border-box interactive"
+          className="completion-check round-btn height-100 border-box interactive"
           checked={completed}
           onChange={(e) => setCompleted(e.target.checked)}
         />

@@ -1,16 +1,17 @@
 import "./App.css";
-import TitleCard from "./components/TitleCard";
-import TodoListSection from "./components/TodoList/TodoListSection";
-
-const userId: string = import.meta.env.VITE_USER_ID;
+import MainContent from "./components/MainContent";
+import HeaderSection from "./components/header/HeaderSection";
+import { AuthProvider } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
 
 function App() {
-  // TODO: Add hook for user management
   return (
-    <>
-      <TitleCard />
-      <TodoListSection userId={userId} />
-    </>
+    <ToastProvider>
+      <AuthProvider>
+        <HeaderSection />
+        <MainContent />
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 

@@ -1,21 +1,26 @@
 import { useEffect, useState } from "react";
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === "undefined") {
+      return "light";
+    }
 
-  useEffect(() => {
-    // Saved theme won't exist on first mount, but should persist after reloading
-    const savedTheme = localStorage.getItem("theme");
-    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-      .matches
+    // Get theme from local storage if already set
+    const savedTheme: string | null = localStorage.getItem("theme");
+    if (savedTheme) {
+      return savedTheme;
+    }
+
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light";
-    setTheme(savedTheme || systemTheme);
-  }, []);
+  });
 
   useEffect(() => {
-    const root = window.document.documentElement;
+    const root: HTMLElement = window.document.documentElement;
 
+    // Update root class name on toggle
     if (theme === "dark") {
       root.classList.add("dark");
     } else {
@@ -33,7 +38,7 @@ export default function ThemeToggle() {
     <div className="theme-icon-wrapper">
       <button
         onClick={toggleTheme}
-        className="theme-icon gradient border-box round-btn interactive"
+        className="theme-icon align-center gradient border-box round-btn height-100 interactive"
       >
         {theme === "dark" ? (
           // Sun Icon (for Light Mode switch)

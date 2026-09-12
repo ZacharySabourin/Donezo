@@ -1,39 +1,21 @@
 import { useState } from "react";
-import type ApiError from "../../types/ApiError";
-import type Todo from "../../types/Todo";
-
-import type { TodoCompletionUpdate, TodoTextUpdate } from "../../services/TodoAPI";
-import ErrorMessage from "../ErrorMessage";
-import LoadingPlaceholder from "../LoadingPlaceholder";
+import {
+  useTodoDispatchContext,
+  useTodoStateContext,
+} from "../../hooks/useTodoContext";
+import type { Todo } from "../../types/todo";
+import LoadingSpinner from "../LoadingSpinner";
 import TodoItem from "./TodoItem";
 
-type ListDisplayProps = Readonly<{
-  todos: Todo[];
-  loading: boolean;
-  error: ApiError | null;
-  handleUpdateItem: (
-    todoId: string,
-    originalValue: TodoCompletionUpdate | TodoTextUpdate,
-    updates: TodoCompletionUpdate | TodoTextUpdate,
-  ) => Promise<void>;
-  handleDeleteItem: (todoId: string) => Promise<void>;
-  onReorder: (draggedId: string, targetId: string) => Promise<void>;
-}>;
-
-export default function ListDisplay({
-  todos,
-  loading,
-  error,
-  handleUpdateItem,
-  handleDeleteItem,
-  onReorder,
-}: ListDisplayProps) {
+export default function ListDisplay() {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const { filteredTodos, loading } = useTodoStateContext();
+  const { handleDragReorder } = useTodoDispatchContext();
 
-  // Caputure drag and hover ids on start
-  const handleDragStart = (id: string) => {
+  // Capture drag and hover ids on start
+  const handleDragStart = (id: string): void => {
     setDraggedId(id);
     setHoveredId(id);
   };
@@ -42,7 +24,7 @@ export default function ListDisplay({
   const handleDragOver = (
     event: React.DragEvent<HTMLDivElement>,
     targetId: string,
-  ) => {
+  ): void => {
     event.preventDefault();
     if (!draggedId) {
       return;
@@ -51,47 +33,40 @@ export default function ListDisplay({
     setHoveredId(targetId);
   };
 
-  const handleDragEnd = async () => {
+  const handleDragEnd = async (): Promise<void> => {
     // No updates needed if item ends up in original position
     if (!draggedId || !hoveredId || draggedId === hoveredId) {
       return;
     }
 
-    const activeDraggedId = draggedId;
-    const activeHoveredId = hoveredId;
+    const activeDraggedId: string = draggedId;
+    const activeHoveredId: string = hoveredId;
 
     // Reset values and set the saving state to true to prevent dragging while syncing with the server.
     setDraggedId(null);
     setHoveredId(null);
     setIsSaving(true);
 
-    await onReorder(activeDraggedId, activeHoveredId);
+    await handleDragReorder(activeDraggedId, activeHoveredId);
     setIsSaving(false);
   };
 
   if (loading) {
-    return <LoadingPlaceholder />;
-  }
-  if (error) {
-    return <ErrorMessage error={error} />;
+    return <LoadingSpinner />;
   }
 
   return (
     <div id="list-display" className="flex-column-start">
-      {todos.map((todo: Todo) => {
+      {filteredTodos.map((todo: Todo) => {
         return (
           <div
             key={todo.id}
             className="row-item-wrapper flex-row-start"
             onDragOver={(e) => handleDragOver(e, todo.id)}
           >
-            <TodoItem
-              todo={todo}
-              handleUpdateItem={handleUpdateItem}
-              handleDeleteItem={handleDeleteItem}
-            />
+            <TodoItem todo={todo} />
             <div
-              className="drag-indicator"
+              className="drag-indicator align-center"
               draggable={!isSaving}
               onDragStart={() => handleDragStart(todo.id)}
               onDragEnd={handleDragEnd}

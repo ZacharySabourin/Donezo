@@ -1,5 +1,5 @@
 import ApiError from "../types/ApiError";
-import type Todo from "../types/Todo";
+import type { Todo } from "../types/todo";
 
 const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
 
@@ -7,7 +7,6 @@ const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
  * Outgoing creation request object
  */
 export interface TodoRequest {
-  user_id: string;
   text: string;
   position: number;
   completed: boolean;
@@ -36,17 +35,22 @@ export interface BulkTodoPositionUpdate {
 }
 
 /**
- * Fetches a list of Todos given the user id by making a GET request.
+ * Fetches a list of Todos given the stored auth token in the browser by making a GET request.
  * Sorts them in ascending order based on position.
- * @param id The current user's id
  * @returns A list of Todos sorted by position in ascending order.
  * @throws ApiError on failure to fetch
  */
-export async function fetchSortedTodosApi(id: string): Promise<Todo[]> {
-  return fetch(baseUrl + id)
+export async function fetchSortedTodosApi(): Promise<Todo[]> {
+  return fetch(`${baseUrl}/todos`, {
+    headers: {
+      "Content-Type": "application/json",
+      "X-XSRF-TOKEN": getLatestCsrfToken(),
+    },
+    credentials: "include",
+  })
     .then((response: Response) => {
       if (!response.ok) {
-        throw new ApiError("Error fetching Todos!", response.status);
+        throw new ApiError("Failed to fetch Todos!", response.status);
       }
       return response.json() as Promise<Todo[]>;
     })
@@ -64,15 +68,17 @@ export async function fetchSortedTodosApi(id: string): Promise<Todo[]> {
  * @throws ApiError on failure to create
  */
 export async function createTodoApi(payload: TodoRequest): Promise<Todo> {
-  return fetch(baseUrl, {
+  return fetch(`${baseUrl}/todos`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "X-XSRF-TOKEN": getLatestCsrfToken(),
     },
+    credentials: "include",
     body: JSON.stringify(payload),
   }).then((response: Response) => {
     if (!response.ok) {
-      throw new ApiError("Error creating new Todo", response.status);
+      throw new ApiError("Failed to create new Todo!", response.status);
     }
     return response.json() as Promise<Todo>;
   });
@@ -88,15 +94,17 @@ export async function updateTodoApi(
   todoId: string,
   updates: TodoCompletionUpdate | TodoTextUpdate,
 ): Promise<void> {
-  fetch(baseUrl + todoId, {
+  return fetch(`${baseUrl}/todos/${todoId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+      "X-XSRF-TOKEN": getLatestCsrfToken(),
     },
+    credentials: "include",
     body: JSON.stringify(updates),
   }).then((response: Response) => {
     if (!response.ok) {
-      throw new ApiError("Error updating Todo", response.status);
+      throw new ApiError("Failed to update Todo!", response.status);
     }
   });
 }
@@ -109,15 +117,17 @@ export async function updateTodoApi(
 export async function updateTodosApi(
   updates: BulkTodoPositionUpdate[],
 ): Promise<void> {
-  fetch(baseUrl, {
+  return fetch(`${baseUrl}/todos`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+      "X-XSRF-TOKEN": getLatestCsrfToken(),
     },
+    credentials: "include",
     body: JSON.stringify(updates),
   }).then((response: Response) => {
     if (!response.ok) {
-      throw new ApiError("Error updating Todos", response.status);
+      throw new ApiError("Error reordering Todos!", response.status);
     }
   });
 }
@@ -128,15 +138,16 @@ export async function updateTodosApi(
  * @param todoId The id of the Todo to delete
  * @throws ApiError on failure to delete
  */
-export async function deleteTodoApi(
-  userId: string,
-  todoId: string,
-): Promise<void> {
-  fetch(baseUrl + userId + "?todoId=" + todoId, {
+export async function deleteTodoApi(todoId: string): Promise<void> {
+  return fetch(`${baseUrl}/todos/${todoId}`, {
     method: "DELETE",
+    headers: {
+      "X-XSRF-TOKEN": getLatestCsrfToken(),
+    },
+    credentials: "include",
   }).then((response: Response) => {
     if (!response.ok) {
-      throw new ApiError("Error deleting Todo", response.status);
+      throw new ApiError("Failed to delete item!", response.status);
     }
   });
 }
@@ -147,15 +158,31 @@ export async function deleteTodoApi(
  * @throws ApiError on failure to delete
  */
 export async function deleteTodoListApi(toDelete: Todo[]): Promise<void> {
-  fetch(baseUrl, {
+  return fetch(`${baseUrl}/todos`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
+      "X-XSRF-TOKEN": getLatestCsrfToken(),
     },
+    credentials: "include",
     body: JSON.stringify(toDelete),
   }).then((response: Response) => {
     if (!response.ok) {
-      throw new ApiError("Error deleting Todos", response.status);
+      throw new ApiError(
+        "Failed to delete all completed items!",
+        response.status,
+      );
     }
   });
+}
+
+/**
+ * Read the latest token from the cookie dynamically right before a request
+ * @returns The latest CSRF token
+ */
+function getLatestCsrfToken(): string {
+  const match: RegExpMatchArray | null = /(?:^|; )XSRF-TOKEN=([^;]*)/.exec(
+    document.cookie,
+  );
+  return match ? decodeURIComponent(match[1]) : "";
 }

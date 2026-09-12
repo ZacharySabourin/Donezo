@@ -12,7 +12,7 @@ export default function useDebounce<T>(value: any, delay: number = 800): T {
   // Used to allow for a brief pause after typing before sending an update to the server
   useEffect(() => {
     // After a delay, updates the debounced value to trigger an API call
-    const timeoutHandler = setTimeout(() => {
+    const timeoutHandler: number = setTimeout(() => {
       setDebouncedValue(value);
     }, delay);
 
