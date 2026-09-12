@@ -18,6 +18,9 @@ export interface Todo {
 
 export type FilterType = "All" | "Active" | "Completed";
 
+/**
+ * State fields in TodoContext
+ */
 export interface TodoState {
   todos: Todo[];
   filteredTodos: Todo[];
@@ -25,6 +28,9 @@ export interface TodoState {
   loading: boolean;
 }
 
+/**
+ * Dispatch callbacks used in TodoContext
+ */
 export interface TodoDispatch {
   setSelectedFilter: React.Dispatch<React.SetStateAction<FilterType>>;
   handleCreateItem: (payload: TodoRequest) => Promise<void>;

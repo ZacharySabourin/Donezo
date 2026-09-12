@@ -21,6 +21,7 @@ export default function LoginForm({
       return;
     }
 
+    //Catch error here to allow for retention of values
     try {
       await login({ username, password });
       showSuccess("Welcome Back!");

@@ -6,6 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useToastContext } from "../hooks/useToastContext";
 import {
   getProfileApi,
   loginApi,
@@ -14,11 +15,17 @@ import {
   type AuthRequest,
   type UserProfile,
 } from "../services/authAPI";
-import type { AuthDispatch, AuthState } from "../types/auth";
 import type ApiError from "../types/ApiError";
-import { useToastContext } from "../hooks/useToastContext";
+import type { AuthDispatch, AuthState } from "../types/auth";
 
+/**
+ * State contexts. Called by the useAuthContext hook
+ */
 export const AuthStateContext = createContext<AuthState | null>(null);
+
+/**
+ * Dispatch contexts. Called by the useAuthContext hook
+ */
 export const AuthDispatchContext = createContext<AuthDispatch | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -27,6 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const { showError } = useToastContext();
 
+  // Used to do the initial profile fetch. If the user's cookie is still stored, the user will be loaded globally
   const refetchAuth = useCallback(async () => {
     try {
       const userProfile: UserProfile | null = await getProfileApi();
@@ -37,56 +45,65 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       setUser(null);
-      const apiError = error as ApiError;
+      const apiError: ApiError = error as ApiError;
       console.error(`${apiError.message}: ${apiError.statusCode}`);
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // refetch whenever context is loaded and when the refetch is called.
   useEffect(() => {
     refetchAuth();
   }, [refetchAuth]);
 
-  const login = useCallback(async (formData: AuthRequest) => {
-    try {
-      setLoading(true);
-      const userProfile = await loginApi(formData);
-      setUser(userProfile);
-    } catch (error) {
-      setUser(null);
-      const apiError = error as ApiError;
-      console.error(`${apiError.message}: ${apiError.statusCode}`);
-      throw apiError;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // Login callback. Bubbles up the error to the UI componenet
+  const login: (formData: AuthRequest) => Promise<void> = useCallback(
+    async (formData: AuthRequest) => {
+      try {
+        setLoading(true);
+        const userProfile: UserProfile = await loginApi(formData);
+        setUser(userProfile);
+      } catch (error) {
+        setUser(null);
+        const apiError: ApiError = error as ApiError;
+        console.error(`${apiError.message}: ${apiError.statusCode}`);
+        throw apiError;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
-  const logout = useCallback(async () => {
+  // Logout callback. Displays the an error toast on failure
+  const logout: () => Promise<void> = useCallback(async () => {
     try {
       await logoutApi();
       setUser(null);
     } catch (error) {
-      setUser(null);
-      const apiError = error as ApiError;
+      const apiError: ApiError = error as ApiError;
       console.error(`${apiError.message}: ${apiError.statusCode}`);
       showError(apiError.message);
     }
-  }, [user]);
-
-  const signup = useCallback(async (formData: AuthRequest) => {
-    try {
-      setLoading(true);
-      await sendSignupApi(formData);
-      setLoading(false);
-    } catch (error) {
-      setLoading(false);
-      const apiError = error as ApiError;
-      console.error(`${apiError.message}: ${apiError.statusCode}`);
-      throw apiError;
-    }
   }, []);
+
+  // Signup callback. Bubbles up the error to the UI component.
+  const signup: (formData: AuthRequest) => Promise<void> = useCallback(
+    async (formData: AuthRequest) => {
+      try {
+        setLoading(true);
+        await sendSignupApi(formData);
+      } catch (error) {
+        const apiError: ApiError = error as ApiError;
+        console.error(`${apiError.message}: ${apiError.statusCode}`);
+        throw apiError;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   const stateContext: AuthState = useMemo(() => {
     return {

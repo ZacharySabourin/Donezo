@@ -23,7 +23,14 @@ import {
 import type ApiError from "../types/ApiError";
 import type { FilterType, Todo, TodoDispatch, TodoState } from "../types/todo";
 
+/**
+ * State context. Called by the useTodoContext hook
+ */
 export const TodoStateContext = createContext<TodoState | null>(null);
+
+/**
+ * Dispatch context. Called by the useTodoContext hook
+ */
 export const TodoDispatchContext = createContext<TodoDispatch | null>(null);
 
 export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
@@ -31,19 +38,20 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedFilter, setSelectedFilter] = useState<FilterType>("All");
 
-  const todosRef = useRef(todos);
+  // Used for snapshots in some of the callbacks
+  const todosRef: React.RefObject<Todo[]> = useRef(todos);
   todosRef.current = todos;
 
   const { showError } = useToastContext();
 
-  // Use a callback since the list fetch is asynchronous code
+  // Fetch callback
   const fetch: () => Promise<void> = useCallback(async () => {
     try {
       setLoading(true);
       const sortedTodos: Todo[] = await fetchSortedTodosApi();
       setTodos(sortedTodos);
     } catch (error) {
-      const apiError = error as ApiError;
+      const apiError: ApiError = error as ApiError;
       console.error(`${apiError.message}: ${apiError.statusCode}`);
       showError(apiError.message);
     } finally {
@@ -57,7 +65,7 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
   }, [fetch]);
 
   // Filter the todos whenever the list or selected filter is updated
-  const filteredTodos = useMemo(() => {
+  const filteredTodos: Todo[] = useMemo(() => {
     return todos.filter((todo) => {
       if (selectedFilter === "Active") {
         return !todo.completed;
@@ -70,13 +78,13 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
   }, [todos, selectedFilter]);
 
   // Handler for item creation. Error bubbled up to component to allow for form value retention
-  const handleCreateItem = useCallback(
+  const handleCreateItem: (payload: TodoRequest) => Promise<void> = useCallback(
     async (payload: TodoRequest): Promise<void> => {
       try {
         const newTodo: Todo = await createTodoApi(payload);
         setTodos((prev: Todo[]) => [...prev, newTodo]);
       } catch (error) {
-        const apiError = error as ApiError;
+        const apiError: ApiError = error as ApiError;
         console.error(`${apiError.message}: ${apiError.statusCode}`);
         throw error;
       }
@@ -85,7 +93,11 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
   );
 
   // Handler for single item update. Error bubbled up to component to allow for field value retention
-  const handleUpdateItem = useCallback(
+  const handleUpdateItem: (
+    todoId: string,
+    originalValue: TodoCompletionUpdate | TodoTextUpdate,
+    update: TodoCompletionUpdate | TodoTextUpdate,
+  ) => Promise<void> = useCallback(
     async (
       todoId: string,
       originalValue: TodoCompletionUpdate | TodoTextUpdate,
@@ -107,8 +119,9 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
             todo.id === todoId ? { ...todo, ...originalValue } : todo,
           ),
         );
-        const apiError = error as ApiError;
+        const apiError: ApiError = error as ApiError;
         console.error(`${apiError.message}: ${apiError.statusCode}`);
+        showError(apiError.message);
         throw error;
       }
     },
@@ -116,9 +129,9 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
   );
 
   // Handler for single item deletion.
-  const handleDeleteItem = useCallback(
+  const handleDeleteItem: (todoId: string) => Promise<void> = useCallback(
     async (todoId: string): Promise<void> => {
-      const current = todosRef.current;
+      const current: Todo[] = todosRef.current;
       const index: number = current.findIndex(
         (todo: Todo) => todo.id === todoId,
       );
@@ -147,7 +160,7 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
       } catch (error) {
         // Revert to original snapshot
         setTodos(snapshot);
-        const apiError = error as ApiError;
+        const apiError: ApiError = error as ApiError;
         console.error(`${apiError.message}: ${apiError.statusCode}`);
         showError(apiError.message);
       }
@@ -156,46 +169,50 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
   );
 
   // Handler for multi-item deletion
-  const handleDeleteAllCompleted = useCallback(async (): Promise<void> => {
-    const current = todosRef.current;
-    const toDelete: Todo[] = current.filter((todo: Todo) => todo.completed);
-    if (toDelete.length === 0) {
-      return;
-    }
-
-    // Capture snapshot of original items
-    const snapshot: Todo[] = [...current];
-
-    // Prepare updates and reorder
-    const { updates, reorderedItems } = reorderAndPrepareBulkUpdate(
-      snapshot.filter((todo: Todo) => !todo.completed),
-    );
-    setTodos(reorderedItems);
-
-    try {
-      await deleteTodoListApi(toDelete);
-
-      // If the removed items are at the end, there won't be any updates here
-      if (updates.length > 0) {
-        await updateTodosApi(updates);
+  const handleDeleteAllCompleted: () => Promise<void> =
+    useCallback(async (): Promise<void> => {
+      const current: Todo[] = todosRef.current;
+      const toDelete: Todo[] = current.filter((todo: Todo) => todo.completed);
+      if (toDelete.length === 0) {
+        return;
       }
-    } catch (error) {
-      // Revert to original snapshot
-      setTodos(snapshot);
-      const apiError = error as ApiError;
-      console.error(`${apiError.message}: ${apiError.statusCode}`);
-      showError(apiError.message);
-    }
-  }, []);
+
+      // Capture snapshot of original items
+      const snapshot: Todo[] = [...current];
+
+      // Prepare updates and reorder
+      const { updates, reorderedItems } = reorderAndPrepareBulkUpdate(
+        snapshot.filter((todo: Todo) => !todo.completed),
+      );
+      setTodos(reorderedItems);
+
+      try {
+        await deleteTodoListApi(toDelete);
+
+        // If the removed items are at the end, there won't be any updates here
+        if (updates.length > 0) {
+          await updateTodosApi(updates);
+        }
+      } catch (error) {
+        // Revert to original snapshot
+        setTodos(snapshot);
+        const apiError: ApiError = error as ApiError;
+        console.error(`${apiError.message}: ${apiError.statusCode}`);
+        showError(apiError.message);
+      }
+    }, []);
 
   // Handler for reordering after a drag and drop
-  const handleDragReorder = useCallback(
+  const handleDragReorder: (
+    draggedId: string,
+    targetId: string,
+  ) => Promise<void> = useCallback(
     async (draggedId: string, targetId: string): Promise<void> => {
       if (draggedId === targetId) {
         return;
       }
 
-      const current = todosRef.current;
+      const current: Todo[] = todosRef.current;
 
       // Find each item
       const draggedIndex: number = current.findIndex((t) => t.id === draggedId);
@@ -224,7 +241,7 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
       } catch (error) {
         // Revert to original snapshot
         setTodos(snapshot);
-        const apiError = error as ApiError;
+        const apiError: ApiError = error as ApiError;
         console.error(`${apiError.message}: ${apiError.statusCode}`);
         showError(apiError.message);
       }
@@ -268,7 +285,7 @@ function reorderAndPrepareBulkUpdate(items: Todo[]): {
   reorderedItems: Todo[];
 } {
   const updates: BulkTodoPositionUpdate[] = [];
-  const reorderedItems = items.map((todo: Todo, index: number) => {
+  const reorderedItems: Todo[] = items.map((todo: Todo, index: number) => {
     // Ensure the position is only changed if the item actually moved
     if (todo.position !== index) {
       updates.push({ id: todo.id, position: index });

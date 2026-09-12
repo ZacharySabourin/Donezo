@@ -39,6 +39,7 @@ export default function SignupForm({
       showError("Password cannot be longer than 50 characters!");
     }
 
+    //Catch error here to allow for retention of values
     try {
       await signup({ username, password });
       showSuccess(`Welcome, ${username}!`);

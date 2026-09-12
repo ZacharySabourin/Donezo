@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useToastContext } from "../../hooks/useToastContext";
 import {
   useTodoDispatchContext,
   useTodoStateContext,
@@ -12,12 +11,11 @@ export default function ListDisplay() {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
-  const { showError } = useToastContext();
   const { filteredTodos, loading } = useTodoStateContext();
   const { handleDragReorder } = useTodoDispatchContext();
 
   // Capture drag and hover ids on start
-  const handleDragStart = (id: string) => {
+  const handleDragStart = (id: string): void => {
     setDraggedId(id);
     setHoveredId(id);
   };
@@ -26,7 +24,7 @@ export default function ListDisplay() {
   const handleDragOver = (
     event: React.DragEvent<HTMLDivElement>,
     targetId: string,
-  ) => {
+  ): void => {
     event.preventDefault();
     if (!draggedId) {
       return;
@@ -35,14 +33,14 @@ export default function ListDisplay() {
     setHoveredId(targetId);
   };
 
-  const handleDragEnd = async () => {
+  const handleDragEnd = async (): Promise<void> => {
     // No updates needed if item ends up in original position
     if (!draggedId || !hoveredId || draggedId === hoveredId) {
       return;
     }
 
-    const activeDraggedId = draggedId;
-    const activeHoveredId = hoveredId;
+    const activeDraggedId: string = draggedId;
+    const activeHoveredId: string = hoveredId;
 
     // Reset values and set the saving state to true to prevent dragging while syncing with the server.
     setDraggedId(null);

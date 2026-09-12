@@ -7,6 +7,9 @@ export interface Toast {
   duration?: number;
 }
 
+/**
+ * Type used in ToastContext
+ */
 export interface ToastContextType {
   showToast: (message: string, type?: ToastType, duration?: number) => void;
   showError: (message: string, duration?: number) => void;

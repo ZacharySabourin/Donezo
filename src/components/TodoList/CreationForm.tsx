@@ -20,6 +20,7 @@ export default function CreationForm() {
       return;
     }
 
+    //Catch error here to allow for retention of values
     try {
       await handleCreateItem({
         text,

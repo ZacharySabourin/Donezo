@@ -10,7 +10,7 @@ export default function useUpdateEffect(
   effect: React.EffectCallback,
   dependencies: React.DependencyList,
 ): void {
-  const isMounted = useRef(false);
+  const isMounted: React.RefObject<boolean> = useRef(false);
 
   useEffect(() => {
     // Prevents the effect from being fired while mounting, then let's it fire like usual

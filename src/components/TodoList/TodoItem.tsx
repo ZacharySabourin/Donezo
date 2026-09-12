@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import useDebounce from "../../hooks/useDebounce";
-import { useToastContext } from "../../hooks/useToastContext";
+import { useTodoDispatchContext } from "../../hooks/useTodoContext";
 import useUpdateEffect from "../../hooks/useUpdateEffect";
 import type {
   TodoCompletionUpdate,
   TodoTextUpdate,
 } from "../../services/todoAPI";
-import type ApiError from "../../types/ApiError";
 import type { Todo } from "../../types/todo";
-import { useTodoDispatchContext } from "../../hooks/useTodoContext";
 
 export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
   const [completed, setCompleted] = useState<boolean>(todo.completed);
@@ -16,7 +14,6 @@ export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
   const debouncedText = useDebounce<string>(text);
 
   const { handleUpdateItem, handleDeleteItem } = useTodoDispatchContext();
-  const { showError } = useToastContext();
 
   // Synchronize state when the parent updates the todo prop
   useEffect(() => {
@@ -30,11 +27,7 @@ export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
     if (updatedValue !== todo.completed) {
       const original: TodoCompletionUpdate = { completed: todo.completed };
       const update: TodoCompletionUpdate = { completed: updatedValue };
-      try {
-        await handleUpdateItem(todo.id, original, update);
-      } catch (error) {
-        showError((error as ApiError).message || "Completion check failed!");
-      }
+      await handleUpdateItem(todo.id, original, update);
     }
   };
 
@@ -44,11 +37,7 @@ export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
       if (debouncedText !== todo.text) {
         const original: TodoTextUpdate = { text: todo.text };
         const update: TodoTextUpdate = { text: debouncedText };
-        try {
-          await handleUpdateItem(todo.id, original, update);
-        } catch (error) {
-          showError((error as ApiError).message || "Text update failed!");
-        }
+        await handleUpdateItem(todo.id, original, update);
       }
     };
     sendUpdate();

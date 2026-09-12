@@ -7,17 +7,25 @@ import {
 } from "react";
 import type { Toast, ToastContextType, ToastType } from "../types/toast";
 
+/**
+ * Toast context. Called by the useToastContext hook
+ */
 export const ToastContext = createContext<ToastContextType | null>(null);
 
 export function ToastProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const removeToast = useCallback((id: string) => {
+  const removeToast: (id: string) => void = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
-  const showToast = useCallback(
-    (message: string, type: ToastType = "info", duration = 4000) => {
+  // After a set duration, remove the toast from the display
+  const showToast: (
+    message: string,
+    type?: ToastType,
+    duration?: number,
+  ) => void = useCallback(
+    (message: string, type: ToastType = "info", duration: number = 4000) => {
       const id = Math.random().toString(36).substring(2, 9);
       setToasts((prev) => [...prev, { id, message, type, duration }]);
 
@@ -28,19 +36,21 @@ export function ToastProvider({ children }: Readonly<{ children: ReactNode }>) {
     [removeToast],
   );
 
-  const showError = useCallback(
-    (message: string, duration?: number) =>
-      showToast(message, "error", duration),
-    [showToast],
-  );
+  const showError: (message: string, duration?: number | undefined) => void =
+    useCallback(
+      (message: string, duration?: number) =>
+        showToast(message, "error", duration),
+      [showToast],
+    );
 
-  const showSuccess = useCallback(
-    (message: string, duration?: number) =>
-      showToast(message, "success", duration),
-    [showToast],
-  );
+  const showSuccess: (message: string, duration?: number | undefined) => void =
+    useCallback(
+      (message: string, duration?: number) =>
+        showToast(message, "success", duration),
+      [showToast],
+    );
 
-  const contextValue = useMemo(() => {
+  const contextValue: ToastContextType = useMemo(() => {
     return { showToast, showError, showSuccess };
   }, [showToast, showError, showSuccess]);
 

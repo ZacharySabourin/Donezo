@@ -35,9 +35,8 @@ export interface BulkTodoPositionUpdate {
 }
 
 /**
- * Fetches a list of Todos given the user id by making a GET request.
+ * Fetches a list of Todos given the stored auth token in the browser by making a GET request.
  * Sorts them in ascending order based on position.
- * @param id The current user's id
  * @returns A list of Todos sorted by position in ascending order.
  * @throws ApiError on failure to fetch
  */
@@ -177,8 +176,13 @@ export async function deleteTodoListApi(toDelete: Todo[]): Promise<void> {
   });
 }
 
-// Read the latest token from the cookie dynamically right before a request
+/**
+ * Read the latest token from the cookie dynamically right before a request
+ * @returns The latest CSRF token
+ */
 function getLatestCsrfToken(): string {
-  const match = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/);
+  const match: RegExpMatchArray | null = /(?:^|; )XSRF-TOKEN=([^;]*)/.exec(
+    document.cookie,
+  );
   return match ? decodeURIComponent(match[1]) : "";
 }

@@ -6,7 +6,8 @@ export default function ThemeToggle() {
       return "light";
     }
 
-    const savedTheme = localStorage.getItem("theme");
+    // Get theme from local storage if already set
+    const savedTheme: string | null = localStorage.getItem("theme");
     if (savedTheme) {
       return savedTheme;
     }
@@ -17,8 +18,9 @@ export default function ThemeToggle() {
   });
 
   useEffect(() => {
-    const root = window.document.documentElement;
+    const root: HTMLElement = window.document.documentElement;
 
+    // Update root class name on toggle
     if (theme === "dark") {
       root.classList.add("dark");
     } else {
