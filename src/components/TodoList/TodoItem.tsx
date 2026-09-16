@@ -1,29 +1,25 @@
-import { useEffect, useState } from "react";
-import useDebounce from "../../hooks/useDebounce";
-import { useTodoDispatchContext } from "../../hooks/useTodoContext";
-import useUpdateEffect from "../../hooks/useUpdateEffect";
-import type {
-  TodoCompletionUpdate,
-  TodoTextUpdate,
-} from "../../services/todoAPI";
-import type { Todo } from "../../types/todo";
+import {
+  useTodoDispatchContext,
+  type Todo,
+  type TodoCompletionUpdate,
+  type TodoTextUpdate,
+} from "@/context";
+import { useDebounce, useUpdateEffect } from "@/hooks";
+import { useState } from "react";
 
 export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
-  const [completed, setCompleted] = useState<boolean>(todo.completed);
   const [text, setText] = useState<string>(todo.text);
-  const debouncedText = useDebounce<string>(text);
+  const [prevTodoText, setPrevTodoText] = useState<string>(todo.text);
 
+  if (text !== prevTodoText) {
+    setText(todo.text);
+    setPrevTodoText(todo.text);
+  }
+
+  const debouncedText = useDebounce<string>(text);
   const { handleUpdateItem, handleDeleteItem } = useTodoDispatchContext();
 
-  // Synchronize state when the parent updates the todo prop
-  useEffect(() => {
-    setCompleted(todo.completed);
-    setText(todo.text);
-  }, [todo.completed, todo.text]);
-
   const handleCompletionChange = async (updatedValue: boolean) => {
-    setCompleted(updatedValue);
-
     if (updatedValue !== todo.completed) {
       const original: TodoCompletionUpdate = { completed: todo.completed };
       const update: TodoCompletionUpdate = { completed: updatedValue };
@@ -40,7 +36,7 @@ export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
         await handleUpdateItem(todo.id, original, update);
       }
     };
-    sendUpdate();
+    void sendUpdate();
   }, [debouncedText]);
 
   return (
@@ -48,19 +44,21 @@ export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
       <input
         className="completion-check border-box interactive"
         type="checkbox"
-        checked={completed}
-        onChange={(e) => handleCompletionChange(e.target.checked)}
+        checked={todo.completed}
+        onChange={(e) => void handleCompletionChange(e.target.checked)}
       />
       <input
         className="todo-input"
         type="text"
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => {
+          setText(e.target.value);
+        }}
       />
       <button
         className="round-btn height-100 gradient border-box interactive"
         type="button"
-        onClick={() => handleDeleteItem(todo.id)}
+        onClick={() => void handleDeleteItem(todo.id)}
       >
         Delete
       </button>

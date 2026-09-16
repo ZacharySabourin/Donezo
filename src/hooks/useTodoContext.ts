@@ -1,6 +1,10 @@
+import {
+  TodoDispatchContext,
+  TodoStateContext,
+  type TodoDispatch,
+  type TodoState,
+} from "@/context";
 import { useContext } from "react";
-import { TodoDispatchContext, TodoStateContext } from "../context/TodoContext";
-import type { TodoDispatch, TodoState } from "../types/todo";
 
 /**
  * Todo state hook. Only usable within a TodoProvider

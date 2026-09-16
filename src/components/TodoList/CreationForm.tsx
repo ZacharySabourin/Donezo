@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { useToastContext } from "../../hooks/useToastContext";
 import {
+  useToastContext,
   useTodoDispatchContext,
   useTodoStateContext,
-} from "../../hooks/useTodoContext";
+} from "@/context";
+import { useState } from "react";
 
 export default function CreationForm() {
   const [completed, setCompleted] = useState<boolean>(false);
@@ -12,7 +12,9 @@ export default function CreationForm() {
   const { todos } = useTodoStateContext();
   const { handleCreateItem } = useTodoDispatchContext();
 
-  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+  const submitCreationForm = async (
+    e: React.SyntheticEvent<HTMLFormElement>,
+  ): Promise<void> => {
     e.preventDefault();
 
     if (!text.trim()) {
@@ -34,26 +36,30 @@ export default function CreationForm() {
     } catch (error) {
       showError((error as Error).message);
     }
-  }
+  };
 
   return (
     <div className="row-item-wrapper">
       <form
-        onSubmit={handleSubmit}
+        onSubmit={(e) => void submitCreationForm(e)}
         className="row-item align-center flex-row-center"
       >
         <input
           type="checkbox"
           className="completion-check round-btn height-100 border-box interactive"
           checked={completed}
-          onChange={(e) => setCompleted(e.target.checked)}
+          onChange={(e) => {
+            setCompleted(e.target.checked);
+          }}
         />
         <input
           className="todo-input"
           type="text"
           placeholder="Create a new Todo..."
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+          }}
         />
       </form>
     </div>

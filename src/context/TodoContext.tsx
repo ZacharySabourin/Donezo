@@ -1,5 +1,13 @@
 import {
-  createContext,
+  ApiError,
+  createTodoApi,
+  deleteTodoApi,
+  deleteTodoListApi,
+  fetchSortedTodosApi,
+  updateTodoApi,
+  updateTodosApi,
+} from "@/services";
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -7,31 +15,19 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useToastContext } from "../hooks/useToastContext";
 import {
-  createTodoApi,
-  deleteTodoApi,
-  deleteTodoListApi,
-  fetchSortedTodosApi,
-  updateTodoApi,
-  updateTodosApi,
+  TodoDispatchContext,
+  TodoStateContext,
+  useToastContext,
   type BulkTodoPositionUpdate,
+  type FilterType,
+  type Todo,
   type TodoCompletionUpdate,
+  type TodoDispatch,
   type TodoRequest,
+  type TodoState,
   type TodoTextUpdate,
-} from "../services/todoAPI";
-import type ApiError from "../types/ApiError";
-import type { FilterType, Todo, TodoDispatch, TodoState } from "../types/todo";
-
-/**
- * State context. Called by the useTodoContext hook
- */
-export const TodoStateContext = createContext<TodoState | null>(null);
-
-/**
- * Dispatch context. Called by the useTodoContext hook
- */
-export const TodoDispatchContext = createContext<TodoDispatch | null>(null);
+} from ".";
 
 export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [todos, setTodos] = useState<Todo[]>([]);

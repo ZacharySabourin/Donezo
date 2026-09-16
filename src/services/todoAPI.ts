@@ -1,38 +1,13 @@
-import ApiError from "../types/ApiError";
-import type { Todo } from "../types/todo";
+import type {
+  BulkTodoPositionUpdate,
+  Todo,
+  TodoCompletionUpdate,
+  TodoRequest,
+  TodoTextUpdate,
+} from "@/context";
+import { ApiError } from ".";
 
 const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
-
-/**
- * Outgoing creation request object
- */
-export interface TodoRequest {
-  text: string;
-  position: number;
-  completed: boolean;
-}
-
-/**
- * Outgoing update request object.
- */
-export interface TodoCompletionUpdate {
-  completed: boolean;
-}
-
-/**
- * Outgoing update request object.
- */
-export interface TodoTextUpdate {
-  text: string;
-}
-
-/**
- * Outgoing update request object.
- */
-export interface BulkTodoPositionUpdate {
-  id: string;
-  position: number;
-}
 
 /**
  * Fetches a list of Todos given the stored auth token in the browser by making a GET request.

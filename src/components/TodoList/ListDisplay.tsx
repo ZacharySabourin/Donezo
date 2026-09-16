@@ -1,9 +1,9 @@
-import { useState } from "react";
 import {
   useTodoDispatchContext,
   useTodoStateContext,
-} from "../../hooks/useTodoContext";
-import type { Todo } from "../../types/todo";
+  type Todo,
+} from "@/context";
+import { useState } from "react";
 import LoadingSpinner from "../LoadingSpinner";
 import TodoItem from "./TodoItem";
 
@@ -62,14 +62,18 @@ export default function ListDisplay() {
           <div
             key={todo.id}
             className="row-item-wrapper flex-row-start"
-            onDragOver={(e) => handleDragOver(e, todo.id)}
+            onDragOver={(e) => {
+              handleDragOver(e, todo.id);
+            }}
           >
             <TodoItem todo={todo} />
             <div
               className="drag-indicator align-center"
               draggable={!isSaving}
-              onDragStart={() => handleDragStart(todo.id)}
-              onDragEnd={handleDragEnd}
+              onDragStart={() => {
+                handleDragStart(todo.id);
+              }}
+              onDragEnd={() => void handleDragEnd()}
               onMouseDown={(e) => {
                 if (!isSaving) e.currentTarget.style.cursor = "grabbing";
               }}

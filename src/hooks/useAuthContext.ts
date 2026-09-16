@@ -1,6 +1,10 @@
+import {
+  AuthDispatchContext,
+  AuthStateContext,
+  type AuthDispatch,
+  type AuthState,
+} from "@/context";
 import { useContext } from "react";
-import { AuthDispatchContext, AuthStateContext } from "../context/AuthContext";
-import type { AuthDispatch, AuthState } from "../types/auth";
 
 /**
  * Auth state hook. Only usable within an AuthProvider

@@ -1,16 +1,6 @@
-import {
-  createContext,
-  type ReactNode,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
-import type { Toast, ToastContextType, ToastType } from "../types/toast";
-
-/**
- * Toast context. Called by the useToastContext hook
- */
-export const ToastContext = createContext<ToastContextType | null>(null);
+import { type ReactNode, useCallback, useMemo, useState } from "react";
+import type { Toast, ToastContextType, ToastType } from ".";
+import { ToastContext } from ".";
 
 export function ToastProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [toasts, setToasts] = useState<Toast[]>([]);

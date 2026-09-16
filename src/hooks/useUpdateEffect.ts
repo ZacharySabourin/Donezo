@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
  * @param effect The effect callback function
  * @param dependencies A list of dependencies that will trigger the effect
  */
-export default function useUpdateEffect(
+export function useUpdateEffect(
   effect: React.EffectCallback,
   dependencies: React.DependencyList,
 ): void {

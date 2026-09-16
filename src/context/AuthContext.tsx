@@ -1,32 +1,26 @@
 import {
-  createContext,
+  ApiError,
+  getProfileApi,
+  loginApi,
+  logoutApi,
+  sendSignupApi,
+} from "@/services";
+import {
   useCallback,
   useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
-import { useToastContext } from "../hooks/useToastContext";
 import {
-  getProfileApi,
-  loginApi,
-  logoutApi,
-  sendSignupApi,
-  type AuthRequest,
+  AuthDispatchContext,
+  AuthStateContext,
+  useToastContext,
+  type AuthDispatch,
+  type AuthFormData,
+  type AuthState,
   type UserProfile,
-} from "../services/authAPI";
-import type ApiError from "../types/ApiError";
-import type { AuthDispatch, AuthState } from "../types/auth";
-
-/**
- * State contexts. Called by the useAuthContext hook
- */
-export const AuthStateContext = createContext<AuthState | null>(null);
-
-/**
- * Dispatch contexts. Called by the useAuthContext hook
- */
-export const AuthDispatchContext = createContext<AuthDispatch | null>(null);
+} from ".";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -58,8 +52,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [refetchAuth]);
 
   // Login callback. Bubbles up the error to the UI componenet
-  const login: (formData: AuthRequest) => Promise<void> = useCallback(
-    async (formData: AuthRequest) => {
+  const login: (formData: AuthFormData) => Promise<void> = useCallback(
+    async (formData: AuthFormData) => {
       try {
         setLoading(true);
         const userProfile: UserProfile = await loginApi(formData);
@@ -89,8 +83,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   // Signup callback. Bubbles up the error to the UI component.
-  const signup: (formData: AuthRequest) => Promise<void> = useCallback(
-    async (formData: AuthRequest) => {
+  const signup: (formData: AuthFormData) => Promise<void> = useCallback(
+    async (formData: AuthFormData) => {
       try {
         setLoading(true);
         await sendSignupApi(formData);
