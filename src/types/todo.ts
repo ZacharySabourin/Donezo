@@ -1,9 +1,3 @@
-import type {
-  TodoCompletionUpdate,
-  TodoRequest,
-  TodoTextUpdate,
-} from "../services/todoAPI";
-
 /**
  * Todo object. Contains, text, position, completion check, and unique ids for itself and the user.
  */
@@ -14,6 +8,37 @@ export interface Todo {
   position: number;
   completed: boolean;
   created_at: Date;
+}
+
+/**
+ * Outgoing creation request object
+ */
+export interface TodoRequest {
+  text: string;
+  position: number;
+  completed: boolean;
+}
+
+/**
+ * Outgoing update request object.
+ */
+export interface TodoCompletionUpdate {
+  completed: boolean;
+}
+
+/**
+ * Outgoing update request object.
+ */
+export interface TodoTextUpdate {
+  text: string;
+}
+
+/**
+ * Outgoing update request object.
+ */
+export interface BulkTodoPositionUpdate {
+  id: string;
+  position: number;
 }
 
 export type FilterType = "All" | "Active" | "Completed";

@@ -1,7 +1,4 @@
-import {
-  useAuthDispatchContext,
-  useAuthStateContext,
-} from "../../hooks/useAuthContext";
+import { useAuthDispatchContext, useAuthStateContext } from "@/context";
 
 export default function HeaderMenu() {
   const { user } = useAuthStateContext();
@@ -12,7 +9,7 @@ export default function HeaderMenu() {
       {user ? (
         <button
           className="round-btn border-box interactive height-100"
-          onClick={() => logout()}
+          onClick={() => void logout()}
         >
           Logout
         </button>

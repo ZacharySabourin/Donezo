@@ -15,7 +15,9 @@ export default function AuthForm() {
       )}
       <div>
         <button
-          onClick={() => setIsSignUp((prev) => !prev)}
+          onClick={() => {
+            setIsSignUp((prev) => !prev);
+          }}
           className="gradient border-box round-btn height-100 interactive width-50"
         >
           {isSignUp ? "Back to Login" : "Create an account"}

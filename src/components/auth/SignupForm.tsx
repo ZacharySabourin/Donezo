@@ -1,6 +1,5 @@
+import { useAuthDispatchContext, useToastContext } from "@/context";
 import { useState } from "react";
-import { useAuthDispatchContext } from "../../hooks/useAuthContext";
-import { useToastContext } from "../../hooks/useToastContext";
 
 export default function SignupForm({
   buttonText,
@@ -11,7 +10,7 @@ export default function SignupForm({
   const { signup } = useAuthDispatchContext();
   const { showSuccess, showError } = useToastContext();
 
-  const handleAuth = async (e: React.SyntheticEvent<HTMLFormElement>) => {
+  const submitSignupForm = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!username.trim()) {
       showError("Username is required!");
@@ -52,7 +51,7 @@ export default function SignupForm({
 
   return (
     <form
-      onSubmit={handleAuth}
+      onSubmit={(e) => void submitSignupForm(e)}
       className="flex-column-start align-center gap-20"
     >
       <input
@@ -61,7 +60,9 @@ export default function SignupForm({
         placeholder="Enter username..."
         autoComplete="username"
         value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        onChange={(e) => {
+          setUsername(e.target.value);
+        }}
       />
       <input
         className="todo-input width-60"
@@ -69,7 +70,9 @@ export default function SignupForm({
         placeholder="Enter password..."
         autoComplete="current-password"
         value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        onChange={(e) => {
+          setPassword(e.target.value);
+        }}
       />
       <input
         className="todo-input width-60"
@@ -77,7 +80,9 @@ export default function SignupForm({
         placeholder="Confirm password..."
         autoComplete="current-password"
         value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
+        onChange={(e) => {
+          setConfirmPassword(e.target.value);
+        }}
       />
       <hr className="width-60" />
       <button

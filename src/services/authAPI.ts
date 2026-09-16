@@ -1,22 +1,5 @@
-import ApiError from "../types/ApiError";
-
-const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
-
-/**
- * Outgoing login and sigup request object.
- */
-export interface AuthRequest {
-  username: string;
-  password: string;
-}
-
-/**
- * Incoming user profile object.
- */
-export interface UserProfile {
-  id: string;
-  username: string;
-}
+import type { AuthFormData, UserProfile } from "@/context";
+import { ApiError, baseUrl } from ".";
 
 /**
  * Sends a POST login request using the given username and password.
@@ -24,7 +7,7 @@ export interface UserProfile {
  * @param payload The given username and possword
  * @returns A Promise containing the user's profile
  */
-export async function loginApi(payload: AuthRequest): Promise<UserProfile> {
+export async function loginApi(payload: AuthFormData): Promise<UserProfile> {
   return fetch(`${baseUrl}/auth/login`, {
     method: "POST",
     headers: {
@@ -59,7 +42,7 @@ export async function logoutApi(): Promise<void> {
  * @param payload The given username and password.
  * @returns Promise<void>
  */
-export async function sendSignupApi(payload: AuthRequest): Promise<void> {
+export async function sendSignupApi(payload: AuthFormData): Promise<void> {
   return fetch(`${baseUrl}/auth/signup`, {
     method: "POST",
     headers: {

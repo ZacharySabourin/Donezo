@@ -1,5 +1,14 @@
+import { useAsync } from "@/hooks";
 import {
-  createContext,
+  ApiError,
+  createTodoApi,
+  deleteTodoApi,
+  deleteTodoListApi,
+  fetchSortedTodosApi,
+  updateTodoApi,
+  updateTodosApi,
+} from "@/services";
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -7,62 +16,52 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useToastContext } from "../hooks/useToastContext";
 import {
-  createTodoApi,
-  deleteTodoApi,
-  deleteTodoListApi,
-  fetchSortedTodosApi,
-  updateTodoApi,
-  updateTodosApi,
+  TodoDispatchContext,
+  TodoStateContext,
+  useToastContext,
   type BulkTodoPositionUpdate,
+  type FilterType,
+  type Todo,
   type TodoCompletionUpdate,
+  type TodoDispatch,
   type TodoRequest,
+  type TodoState,
   type TodoTextUpdate,
-} from "../services/todoAPI";
-import type ApiError from "../types/ApiError";
-import type { FilterType, Todo, TodoDispatch, TodoState } from "../types/todo";
-
-/**
- * State context. Called by the useTodoContext hook
- */
-export const TodoStateContext = createContext<TodoState | null>(null);
-
-/**
- * Dispatch context. Called by the useTodoContext hook
- */
-export const TodoDispatchContext = createContext<TodoDispatch | null>(null);
+} from ".";
 
 export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const [selectedFilter, setSelectedFilter] = useState<FilterType>("All");
+  const { showError } = useToastContext();
+
+  const handleListFetchError = useCallback(
+    (error: Error) => {
+      const apiError: ApiError = error as ApiError;
+      console.error(`${apiError.message}: ${String(apiError.statusCode)}`);
+      showError(apiError.message);
+    },
+    [showError],
+  );
+
+  const {
+    data,
+    setData: setTodos,
+    loading,
+  } = useAsync<Todo[]>({
+    asyncFn: fetchSortedTodosApi,
+    onError: handleListFetchError,
+  });
+
+  // Protect against null data
+  const todos: Todo[] = useMemo(() => {
+    return data ?? [];
+  }, [data]);
 
   // Used for snapshots in some of the callbacks
   const todosRef: React.RefObject<Todo[]> = useRef(todos);
-  todosRef.current = todos;
-
-  const { showError } = useToastContext();
-
-  // Fetch callback
-  const fetch: () => Promise<void> = useCallback(async () => {
-    try {
-      setLoading(true);
-      const sortedTodos: Todo[] = await fetchSortedTodosApi();
-      setTodos(sortedTodos);
-    } catch (error) {
-      const apiError: ApiError = error as ApiError;
-      console.error(`${apiError.message}: ${apiError.statusCode}`);
-      showError(apiError.message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Triggers on component mount
   useEffect(() => {
-    fetch();
-  }, [fetch]);
+    todosRef.current = todos;
+  }, [todos]);
 
   // Filter the todos whenever the list or selected filter is updated
   const filteredTodos: Todo[] = useMemo(() => {
@@ -82,14 +81,14 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
     async (payload: TodoRequest): Promise<void> => {
       try {
         const newTodo: Todo = await createTodoApi(payload);
-        setTodos((prev: Todo[]) => [...prev, newTodo]);
+        setTodos((prev: Todo[] | null) => [...(prev ?? []), newTodo]);
       } catch (error) {
         const apiError: ApiError = error as ApiError;
-        console.error(`${apiError.message}: ${apiError.statusCode}`);
+        console.error(`${apiError.message}: ${String(apiError.statusCode)}`);
         throw error;
       }
     },
-    [],
+    [setTodos],
   );
 
   // Handler for single item update. Error bubbled up to component to allow for field value retention
@@ -104,8 +103,8 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
       update: TodoCompletionUpdate | TodoTextUpdate,
     ): Promise<void> => {
       // Find relevant item and update value
-      setTodos((prev: Todo[]) =>
-        prev.map((todo: Todo) =>
+      setTodos((prev: Todo[] | null) =>
+        (prev ?? []).map((todo: Todo) =>
           todo.id === todoId ? { ...todo, ...update } : todo,
         ),
       );
@@ -114,18 +113,18 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
         await updateTodoApi(todoId, update);
       } catch (error) {
         // Revert to original value
-        setTodos((prev: Todo[]) =>
-          prev.map((todo: Todo) =>
+        setTodos((prev: Todo[] | null) =>
+          (prev ?? []).map((todo: Todo) =>
             todo.id === todoId ? { ...todo, ...originalValue } : todo,
           ),
         );
         const apiError: ApiError = error as ApiError;
-        console.error(`${apiError.message}: ${apiError.statusCode}`);
+        console.error(`${apiError.message}: ${String(apiError.statusCode)}`);
         showError(apiError.message);
         throw error;
       }
     },
-    [],
+    [setTodos, showError],
   );
 
   // Handler for single item deletion.
@@ -161,11 +160,11 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
         // Revert to original snapshot
         setTodos(snapshot);
         const apiError: ApiError = error as ApiError;
-        console.error(`${apiError.message}: ${apiError.statusCode}`);
+        console.error(`${apiError.message}: ${String(apiError.statusCode)}`);
         showError(apiError.message);
       }
     },
-    [],
+    [setTodos, showError],
   );
 
   // Handler for multi-item deletion
@@ -197,10 +196,10 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
         // Revert to original snapshot
         setTodos(snapshot);
         const apiError: ApiError = error as ApiError;
-        console.error(`${apiError.message}: ${apiError.statusCode}`);
+        console.error(`${apiError.message}: ${String(apiError.statusCode)}`);
         showError(apiError.message);
       }
-    }, []);
+    }, [setTodos, showError]);
 
   // Handler for reordering after a drag and drop
   const handleDragReorder: (
@@ -242,11 +241,11 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
         // Revert to original snapshot
         setTodos(snapshot);
         const apiError: ApiError = error as ApiError;
-        console.error(`${apiError.message}: ${apiError.statusCode}`);
+        console.error(`${apiError.message}: ${String(apiError.statusCode)}`);
         showError(apiError.message);
       }
     },
-    [],
+    [setTodos, showError],
   );
 
   const stateContext: TodoState = useMemo(() => {
@@ -271,11 +270,11 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
   ]);
 
   return (
-    <TodoStateContext.Provider value={stateContext}>
-      <TodoDispatchContext.Provider value={dispatchContext}>
+    <TodoStateContext value={stateContext}>
+      <TodoDispatchContext value={dispatchContext}>
         {children}
-      </TodoDispatchContext.Provider>
-    </TodoStateContext.Provider>
+      </TodoDispatchContext>
+    </TodoStateContext>
   );
 }
 

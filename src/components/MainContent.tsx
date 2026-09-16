@@ -1,5 +1,4 @@
-import { TodoProvider } from "../context/TodoContext";
-import { useAuthStateContext } from "../hooks/useAuthContext";
+import { TodoProvider, useAuthStateContext } from "@/context";
 import AuthForm from "./auth/AuthForm";
 import LoadingSpinner from "./LoadingSpinner";
 import TodoListSection from "./TodoList/TodoListSection";

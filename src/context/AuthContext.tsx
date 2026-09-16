@@ -1,65 +1,44 @@
+import { useAsync } from "@/hooks";
 import {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
-import { useToastContext } from "../hooks/useToastContext";
-import {
+  ApiError,
   getProfileApi,
   loginApi,
   logoutApi,
   sendSignupApi,
-  type AuthRequest,
+} from "@/services";
+import { useCallback, useMemo, type ReactNode } from "react";
+import {
+  AuthDispatchContext,
+  AuthStateContext,
+  useToastContext,
+  type AuthDispatch,
+  type AuthFormData,
+  type AuthState,
   type UserProfile,
-} from "../services/authAPI";
-import type ApiError from "../types/ApiError";
-import type { AuthDispatch, AuthState } from "../types/auth";
-
-/**
- * State contexts. Called by the useAuthContext hook
- */
-export const AuthStateContext = createContext<AuthState | null>(null);
-
-/**
- * Dispatch contexts. Called by the useAuthContext hook
- */
-export const AuthDispatchContext = createContext<AuthDispatch | null>(null);
+} from ".";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-
   const { showError } = useToastContext();
 
-  // Used to do the initial profile fetch. If the user's cookie is still stored, the user will be loaded globally
-  const refetchAuth = useCallback(async () => {
-    try {
-      const userProfile: UserProfile | null = await getProfileApi();
-      if (userProfile) {
-        setUser(userProfile);
-      } else {
-        setUser(null);
-      }
-    } catch (error) {
-      setUser(null);
-      const apiError: ApiError = error as ApiError;
-      console.error(`${apiError.message}: ${apiError.statusCode}`);
-    } finally {
-      setLoading(false);
-    }
+  const handleProfileError = useCallback((error: Error) => {
+    const apiError = error as ApiError;
+    console.error(`${apiError.message}: ${String(apiError.statusCode)}`);
   }, []);
 
-  // refetch whenever context is loaded and when the refetch is called.
-  useEffect(() => {
-    refetchAuth();
-  }, [refetchAuth]);
+  const {
+    data: user,
+    setData: setUser,
+    loading,
+    setLoading,
+    refetch: refetchAuth,
+  } = useAsync({
+    asyncFn: getProfileApi,
+    onError: handleProfileError,
+  });
 
   // Login callback. Bubbles up the error to the UI componenet
-  const login: (formData: AuthRequest) => Promise<void> = useCallback(
-    async (formData: AuthRequest) => {
+  const login: (formData: AuthFormData) => Promise<void> = useCallback(
+    async (formData: AuthFormData) => {
       try {
         setLoading(true);
         const userProfile: UserProfile = await loginApi(formData);
@@ -67,13 +46,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         setUser(null);
         const apiError: ApiError = error as ApiError;
-        console.error(`${apiError.message}: ${apiError.statusCode}`);
+        console.error(`${apiError.message}: ${String(apiError.statusCode)}`);
         throw apiError;
       } finally {
         setLoading(false);
       }
     },
-    [],
+    [setLoading, setUser],
   );
 
   // Logout callback. Displays the an error toast on failure
@@ -83,26 +62,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
     } catch (error) {
       const apiError: ApiError = error as ApiError;
-      console.error(`${apiError.message}: ${apiError.statusCode}`);
+      console.error(`${apiError.message}: ${String(apiError.statusCode)}`);
       showError(apiError.message);
     }
-  }, []);
+  }, [setUser, showError]);
 
   // Signup callback. Bubbles up the error to the UI component.
-  const signup: (formData: AuthRequest) => Promise<void> = useCallback(
-    async (formData: AuthRequest) => {
+  const signup: (formData: AuthFormData) => Promise<void> = useCallback(
+    async (formData: AuthFormData) => {
       try {
         setLoading(true);
         await sendSignupApi(formData);
       } catch (error) {
         const apiError: ApiError = error as ApiError;
-        console.error(`${apiError.message}: ${apiError.statusCode}`);
+        console.error(`${apiError.message}: ${String(apiError.statusCode)}`);
         throw apiError;
       } finally {
         setLoading(false);
       }
     },
-    [],
+    [setLoading],
   );
 
   const stateContext: AuthState = useMemo(() => {
@@ -122,10 +101,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [login, logout, signup, refetchAuth]);
 
   return (
-    <AuthStateContext.Provider value={stateContext}>
-      <AuthDispatchContext.Provider value={dispatchContext}>
+    <AuthStateContext value={stateContext}>
+      <AuthDispatchContext value={dispatchContext}>
         {children}
-      </AuthDispatchContext.Provider>
-    </AuthStateContext.Provider>
+      </AuthDispatchContext>
+    </AuthStateContext>
   );
 };

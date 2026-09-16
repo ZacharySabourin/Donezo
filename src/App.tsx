@@ -1,8 +1,7 @@
+import { AuthProvider, ToastProvider } from "@/context";
 import "./App.css";
-import MainContent from "./components/MainContent";
-import HeaderSection from "./components/header/HeaderSection";
-import { AuthProvider } from "./context/AuthContext";
-import { ToastProvider } from "./context/ToastContext";
+import MainContent from "@/components/MainContent";
+import HeaderSection from "@/components/header/HeaderSection";
 
 function App() {
   return (

@@ -1,8 +1,8 @@
 import {
   useTodoDispatchContext,
   useTodoStateContext,
-} from "../../hooks/useTodoContext";
-import type { FilterType } from "../../types/todo";
+  type FilterType,
+} from "@/context";
 
 export default function ListOptions() {
   const { filteredTodos, selectedFilter } = useTodoStateContext();
@@ -23,7 +23,9 @@ export default function ListOptions() {
               name="filter"
               value={filter}
               checked={selectedFilter === filter}
-              onChange={() => setSelectedFilter(filter)}
+              onChange={() => {
+                setSelectedFilter(filter);
+              }}
             />
             <span>{filter}</span>
           </label>
@@ -33,7 +35,7 @@ export default function ListOptions() {
       <button
         className="round-btn height-100 gradient border-box interactive"
         type="button"
-        onClick={() => handleDeleteAllCompleted()}
+        onClick={() => void handleDeleteAllCompleted()}
       >
         Clear Completed
       </button>

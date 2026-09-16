@@ -1,6 +1,5 @@
+import { useAuthDispatchContext, useToastContext } from "@/context";
 import { useState } from "react";
-import { useAuthDispatchContext } from "../../hooks/useAuthContext";
-import { useToastContext } from "../../hooks/useToastContext";
 
 export default function LoginForm({
   buttonText,
@@ -10,7 +9,7 @@ export default function LoginForm({
   const { login } = useAuthDispatchContext();
   const { showSuccess, showError } = useToastContext();
 
-  const handleAuth = async (e: React.SyntheticEvent<HTMLFormElement>) => {
+  const submitLoginForm = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!username.trim()) {
       showError("Username is required!");
@@ -34,7 +33,7 @@ export default function LoginForm({
 
   return (
     <form
-      onSubmit={handleAuth}
+      onSubmit={(e) => void submitLoginForm(e)}
       className="flex-column-start align-center gap-20"
     >
       <input
@@ -43,7 +42,9 @@ export default function LoginForm({
         placeholder="Enter username..."
         autoComplete="username"
         value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        onChange={(e) => {
+          setUsername(e.target.value);
+        }}
       />
       <input
         className="todo-input width-60"
@@ -51,7 +52,9 @@ export default function LoginForm({
         placeholder="Enter password..."
         autoComplete="current-password"
         value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        onChange={(e) => {
+          setPassword(e.target.value);
+        }}
       />
       <hr className="width-60" />
       <button
