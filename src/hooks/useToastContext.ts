@@ -1,12 +1,12 @@
 import { ToastContext, type ToastContextType } from "@/context";
-import { useContext } from "react";
+import { use } from "react";
 
 /**
  * Toast hook. Only usable within a ToastProvider
  * @returns ToastContextType
  */
 export function useToastContext() {
-  const context: ToastContextType | null = useContext(ToastContext);
+  const context: ToastContextType | null = use(ToastContext);
   if (!context) {
     throw new Error("useToastContext must be used within a ToastProvider");
   }

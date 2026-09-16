@@ -1,7 +1,5 @@
 import type { AuthFormData, UserProfile } from "@/context";
-import { ApiError } from ".";
-
-const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
+import { ApiError, baseUrl } from ".";
 
 /**
  * Sends a POST login request using the given username and password.

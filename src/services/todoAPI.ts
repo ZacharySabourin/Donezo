@@ -5,9 +5,7 @@ import type {
   TodoRequest,
   TodoTextUpdate,
 } from "@/context";
-import { ApiError } from ".";
-
-const baseUrl: string = import.meta.env.VITE_SERVER_API_BASE_URL;
+import { ApiError, baseUrl } from ".";
 
 /**
  * Fetches a list of Todos given the stored auth token in the browser by making a GET request.

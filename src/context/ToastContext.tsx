@@ -15,7 +15,7 @@ export function ToastProvider({ children }: Readonly<{ children: ReactNode }>) {
     type?: ToastType,
     duration?: number,
   ) => void = useCallback(
-    (message: string, type: ToastType = "info", duration: number = 4000) => {
+    (message: string, type: ToastType = "info", duration = 4000) => {
       const id = Math.random().toString(36).substring(2, 9);
       setToasts((prev) => [...prev, { id, message, type, duration }]);
 
@@ -26,33 +26,35 @@ export function ToastProvider({ children }: Readonly<{ children: ReactNode }>) {
     [removeToast],
   );
 
-  const showError: (message: string, duration?: number | undefined) => void =
-    useCallback(
-      (message: string, duration?: number) =>
-        showToast(message, "error", duration),
-      [showToast],
-    );
+  const showError: (message: string, duration?: number) => void = useCallback(
+    (message: string, duration?: number) => {
+      showToast(message, "error", duration);
+    },
+    [showToast],
+  );
 
-  const showSuccess: (message: string, duration?: number | undefined) => void =
-    useCallback(
-      (message: string, duration?: number) =>
-        showToast(message, "success", duration),
-      [showToast],
-    );
+  const showSuccess: (message: string, duration?: number) => void = useCallback(
+    (message: string, duration?: number) => {
+      showToast(message, "success", duration);
+    },
+    [showToast],
+  );
 
   const contextValue: ToastContextType = useMemo(() => {
     return { showToast, showError, showSuccess };
   }, [showToast, showError, showSuccess]);
 
   return (
-    <ToastContext.Provider value={contextValue}>
+    <ToastContext value={contextValue}>
       {children}
       <div className="toast-container" aria-live="assertive">
         {toasts.map((toast) => (
           <div key={toast.id} className={`toast-banner toast-${toast.type}`}>
             <span>{toast.message}</span>
             <button
-              onClick={() => removeToast(toast.id)}
+              onClick={() => {
+                removeToast(toast.id);
+              }}
               className="toast-close-btn"
               aria-label="Close notification"
             >
@@ -61,6 +63,6 @@ export function ToastProvider({ children }: Readonly<{ children: ReactNode }>) {
           </div>
         ))}
       </div>
-    </ToastContext.Provider>
+    </ToastContext>
   );
 }

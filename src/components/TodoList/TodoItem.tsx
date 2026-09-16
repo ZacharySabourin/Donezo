@@ -10,14 +10,14 @@ import { useState } from "react";
 export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
   const [text, setText] = useState<string>(todo.text);
   const [prevTodoText, setPrevTodoText] = useState<string>(todo.text);
-
-  if (text !== prevTodoText) {
-    setText(todo.text);
-    setPrevTodoText(todo.text);
-  }
-
   const debouncedText = useDebounce<string>(text);
   const { handleUpdateItem, handleDeleteItem } = useTodoDispatchContext();
+
+  // Compare the incoming prop against our cached prop state
+  if (todo.text !== prevTodoText) {
+    setPrevTodoText(todo.text);
+    setText(todo.text);
+  }
 
   const handleCompletionChange = async (updatedValue: boolean) => {
     if (updatedValue !== todo.completed) {
