@@ -1,75 +1,31 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Donezo
 
-Currently, two official plugins are available:
+A modern, high-performance, security-conscious single-page application (SPA) for multi-user task management built with React, TypeScript, and Vite. Designed as the frontend client for the Donezo-API, this application provides a responsive UI featuring custom context-driven state management, debounced actions, dark/light theme toggling, and cookie-based authentication integration.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Key Features
 
-## React Compiler
+- Context-Driven State Architecture: Global client state management modularized across `AuthContext`, `TodoContext`, and `ToastContext`.  
+- Performant UI Operations: Optimized user inputs and search using custom hooks like `useDebounce` and `useUpdateEffect`.  
+- Modular Component Design: Granular component structure including dedicated forms, todo item options, list displays, and system notifications.  
+- Secure API Integration: Typed API abstractions (`authAPI`, `todoAPI`) engineered to seamlessly interface with backend JWT and CSRF security headers.  
+- Dynamic Theme Engine: Built-in theme toggling supporting smooth visual switching and responsive CSS design.
+- Type Safety & Linting: End-to-end static typing powered by TypeScript and enforced via ESLint.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+- **Language**: TypeScript  
+- **UI Library**: React 18+  
+- **Build Tool**: Vite  
+- **State Management**: React Context API & Custom Hooks  
+- **Styling**: CSS3  
+- **Linting**: ESLint
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Useful Commands
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+| Command              | Description                                                     |
+|----------------------|-----------------------------------------------------------------|
+| `npm run dev`        | Starts the Vite local development server with HMR               |
+| `npm run build`      | Compiles TypeScript and builds the app for production output    |
+| `npm run preview`    | Locally previews the compiled production build                  |
+| `npm run lint`       | Runs ESLint across the codebase to check for style/type issues  |
