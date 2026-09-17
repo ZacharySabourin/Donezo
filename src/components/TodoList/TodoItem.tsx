@@ -7,6 +7,12 @@ import {
 import { useDebounce, useUpdateEffect } from "@/hooks";
 import { useState } from "react";
 
+/**
+ * Renders a single Todo row: a completion checkbox, an editable
+ * text input (debounced before syncing to the server), and a
+ * delete button.
+ * @param todo The Todo entity to render.
+ */
 export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
   const [text, setText] = useState<string>(todo.text);
   const [prevTodoText, setPrevTodoText] = useState<string>(todo.text);
@@ -19,6 +25,7 @@ export default function TodoItem({ todo }: Readonly<{ todo: Todo }>) {
     setText(todo.text);
   }
 
+  // Persists a completion toggle, but only if it actually changed.
   const handleCompletionChange = async (updatedValue: boolean) => {
     if (updatedValue !== todo.completed) {
       const original: TodoCompletionUpdate = { completed: todo.completed };

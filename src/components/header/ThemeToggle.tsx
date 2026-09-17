@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
 
+/**
+ * Button that toggles the app between light and dark themes.
+ * Initializes from `localStorage`, falling back to the OS-level
+ * `prefers-color-scheme`, and persists changes back to
+ * `localStorage` while toggling the `dark` class on `<html>`.
+ */
 export default function ThemeToggle() {
   const [theme, setTheme] = useState(() => {
     if (typeof window === "undefined") {
@@ -30,6 +36,7 @@ export default function ThemeToggle() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  // Flips between "light" and "dark".
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
   };

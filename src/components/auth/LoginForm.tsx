@@ -1,6 +1,12 @@
 import { useAuthDispatchContext, useToastContext } from "@/context";
 import { useState } from "react";
 
+/**
+ * Login form used within `AuthForm`. Validates that both fields are
+ * filled in before calling the `login` dispatch function, and shows
+ * a toast on success or failure.
+ * @param buttonText The label to display on the submit button.
+ */
 export default function LoginForm({
   buttonText,
 }: Readonly<{ buttonText: string }>) {
@@ -9,6 +15,7 @@ export default function LoginForm({
   const { login } = useAuthDispatchContext();
   const { showSuccess, showError } = useToastContext();
 
+  // Validates required fields, then attempts to log the user in.
   const submitLoginForm = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!username.trim()) {

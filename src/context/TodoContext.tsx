@@ -30,10 +30,18 @@ import {
   type TodoTextUpdate,
 } from ".";
 
+/**
+ * Provides `TodoStateContext` and `TodoDispatchContext` to its
+ * subtree. Fetches the current user's Todos on mount and exposes
+ * CRUD + reorder handlers that optimistically update local state
+ * and roll back on API failure. Must be rendered within a
+ * `ToastProvider` (used to surface errors).
+ */
 export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [selectedFilter, setSelectedFilter] = useState<FilterType>("All");
   const { showError } = useToastContext();
 
+  // Logs and surfaces a toast when the initial Todo list fails to load.
   const handleListFetchError = useCallback(
     (error: Error) => {
       const apiError: ApiError = error as ApiError;
@@ -278,7 +286,15 @@ export function TodoProvider({ children }: Readonly<{ children: ReactNode }>) {
   );
 }
 
-// Creates a new array with updated positions and prepares the update payload
+/**
+ * Recomputes `position` for each item based on its index in `items`
+ * and builds the minimal set of `BulkTodoPositionUpdate`s needed to
+ * persist that reorder to the server (items whose position didn't
+ * change are omitted).
+ * @param items The Todos in their new desired order.
+ * @returns The position updates to send to the server, and the
+ * full list with positions already applied for optimistic UI updates.
+ */
 function reorderAndPrepareBulkUpdate(items: Todo[]): {
   updates: BulkTodoPositionUpdate[];
   reorderedItems: Todo[];

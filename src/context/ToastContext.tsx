@@ -2,9 +2,15 @@ import { type ReactNode, useCallback, useMemo, useState } from "react";
 import type { Toast, ToastContextType, ToastType } from ".";
 import { ToastContext } from ".";
 
+/**
+ * Provides `ToastContext` to its subtree and renders the toast
+ * notification stack. Toasts are auto-dismissed after their
+ * configured duration but can also be closed manually.
+ */
 export function ToastProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
+  // Removes a toast from the display by id (called on timeout or manual close).
   const removeToast: (id: string) => void = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);

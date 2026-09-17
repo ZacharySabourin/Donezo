@@ -2,7 +2,13 @@ import { useState } from "react";
 import LoginForm from "./LoginForm";
 import SignupForm from "./SignupForm";
 
+/**
+ * Container shown to signed-out users that toggles between the
+ * `LoginForm` and `SignupForm`, along with a button to switch
+ * between the two modes.
+ */
 export default function AuthForm() {
+  // Tracks whether the Signup form (true) or Login form (false) is shown.
   const [isSignUp, setIsSignUp] = useState<boolean>(false);
 
   return (

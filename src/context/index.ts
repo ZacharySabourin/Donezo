@@ -1,3 +1,9 @@
+/**
+ * Barrel file for the app's three React Contexts (Auth, Toast,
+ * Todo). Each section re-exports that context's state/dispatch
+ * hooks, its associated types, its `Provider` component, and its
+ * raw context objects.
+ */
 export {
   useAuthDispatchContext,
   useAuthStateContext,

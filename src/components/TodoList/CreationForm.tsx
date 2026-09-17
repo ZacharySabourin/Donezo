@@ -5,6 +5,11 @@ import {
 } from "@/context";
 import { useState } from "react";
 
+/**
+ * Form for creating a new Todo. New items are appended to the end
+ * of the list (`position` = current `todos.length`) and the form
+ * resets on success while retaining values on failure.
+ */
 export default function CreationForm() {
   const [completed, setCompleted] = useState<boolean>(false);
   const [text, setText] = useState<string>("");
@@ -12,6 +17,7 @@ export default function CreationForm() {
   const { todos } = useTodoStateContext();
   const { handleCreateItem } = useTodoDispatchContext();
 
+  // Validates the text field, then creates the new Todo.
   const submitCreationForm = async (
     e: React.SyntheticEvent<HTMLFormElement>,
   ): Promise<void> => {

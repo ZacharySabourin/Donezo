@@ -1,5 +1,9 @@
 import { useAuthDispatchContext, useAuthStateContext } from "@/context";
 
+/**
+ * Renders a Logout button when a user is authenticated; renders
+ * nothing otherwise.
+ */
 export default function HeaderMenu() {
   const { user } = useAuthStateContext();
   const { logout } = useAuthDispatchContext();

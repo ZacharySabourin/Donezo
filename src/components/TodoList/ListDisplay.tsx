@@ -7,6 +7,12 @@ import { useState } from "react";
 import LoadingSpinner from "../LoadingSpinner";
 import TodoItem from "./TodoItem";
 
+/**
+ * Renders the filtered list of Todos and implements drag-and-drop
+ * reordering. Each row exposes a drag handle; dropping a row over
+ * another triggers `handleDragReorder` with the dragged/target ids.
+ * Dragging is disabled while a reorder is being saved to the server.
+ */
 export default function ListDisplay() {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -33,6 +39,7 @@ export default function ListDisplay() {
     setHoveredId(targetId);
   };
 
+  // Finalizes a drag operation by persisting the reorder to the server.
   const handleDragEnd = async (): Promise<void> => {
     // No updates needed if item ends up in original position
     if (!draggedId || !hoveredId || draggedId === hoveredId) {
