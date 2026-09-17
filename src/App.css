@@ -161,10 +161,26 @@
   background-image: var(--fill-surface);
   overflow: hidden;
 
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+
   @media (max-width: 480px) {
     gap: var(--space-1);
     padding: var(--space-2) var(--space-2);
   }
+}
+
+.row-item-wrapper.is-dragging {
+  opacity: 0.4;
+  transform: scale(0.98);
+}
+
+.row-item-wrapper.is-hovered {
+  border: 2px solid var(--primary-color-dark);
+  background-color: rgba(239, 246, 255, 0.5);
 }
 
 .row-item {
@@ -175,7 +191,7 @@
   width: 100%;
 
   @media (max-width: 480px) {
-    gap: var(--space-1)
+    gap: var(--space-1);
   }
 }
 
@@ -236,6 +252,19 @@
   user-select: none;
   cursor: grab;
   touch-action: none;
+  border: none;
+  background: transparent;
+}
+
+.drag-indicator:active,
+.drag-indicator.is-grabbing {
+  cursor: grabbing;
+}
+
+/* Disabled state during server sync */
+.drag-indicator:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 /* ---------------------------------------------------------------
