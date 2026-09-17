@@ -3,6 +3,11 @@ import "./App.css";
 import MainContent from "@/components/MainContent";
 import HeaderSection from "@/components/header/HeaderSection";
 
+/**
+ * Application root. Wires up the global `ToastProvider` and
+ * `AuthProvider` context providers around the header and main
+ * content areas.
+ */
 function App() {
   return (
     <ToastProvider>

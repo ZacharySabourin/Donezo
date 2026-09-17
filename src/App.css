@@ -1,3 +1,10 @@
+/**
+ * Reusable utility classes shared across components: gradients,
+ * layout helpers (flex/spacing), buttons, form inputs, the toast
+ * stack, and the drag-and-drop indicator used by the Todo list.
+ * Theme-specific color tokens live in index.css.
+ */
+
 .gradient {
   background-image:
     linear-gradient(to bottom right, var(--bg-primary), var(--bg-secondary)),

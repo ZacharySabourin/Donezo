@@ -1,3 +1,9 @@
+/**
+ * Global styles and CSS custom-property (design token) definitions.
+ * `:root` defines the light theme; `:root.dark` (toggled by
+ * ThemeToggle.tsx) overrides the same tokens for dark mode.
+ */
+
 :root {
   color-scheme: light dark;
   --text: #000;

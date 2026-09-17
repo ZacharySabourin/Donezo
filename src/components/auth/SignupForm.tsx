@@ -1,6 +1,13 @@
 import { useAuthDispatchContext, useToastContext } from "@/context";
 import { useState } from "react";
 
+/**
+ * Signup form used within `AuthForm`. Validates username/password
+ * requirements (length, matching confirmation) client-side before
+ * calling the `signup` dispatch function, and shows a toast on
+ * success or failure.
+ * @param buttonText The label to display on the submit button.
+ */
 export default function SignupForm({
   buttonText,
 }: Readonly<{ buttonText: string }>) {
@@ -10,6 +17,7 @@ export default function SignupForm({
   const { signup } = useAuthDispatchContext();
   const { showSuccess, showError } = useToastContext();
 
+  // Validates required fields and password rules, then attempts to create the account.
   const submitSignupForm = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!username.trim()) {

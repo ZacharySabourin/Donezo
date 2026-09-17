@@ -17,9 +17,16 @@ import {
   type UserProfile,
 } from ".";
 
+/**
+ * Provides `AuthStateContext` and `AuthDispatchContext` to its
+ * subtree. Fetches the current user's profile (via cookie-based
+ * session) on mount and exposes login/logout/signup handlers. Must
+ * be rendered within a `ToastProvider` (used to surface errors).
+ */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { showError } = useToastContext();
 
+  // Silently logs profile-fetch failures (e.g. no active session) without a toast.
   const handleProfileError = useCallback((error: Error) => {
     const apiError = error as ApiError;
     console.error(`${apiError.message}: ${String(apiError.statusCode)}`);

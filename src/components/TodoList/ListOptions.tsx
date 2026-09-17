@@ -4,6 +4,11 @@ import {
   type FilterType,
 } from "@/context";
 
+/**
+ * Footer bar for the Todo list: shows a remaining-item count,
+ * radio buttons for switching between the "All"/"Active"/"Completed"
+ * filters, and a button to bulk-delete completed items.
+ */
 export default function ListOptions() {
   const { filteredTodos, selectedFilter } = useTodoStateContext();
   const { setSelectedFilter, handleDeleteAllCompleted } =

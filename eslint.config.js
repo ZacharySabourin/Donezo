@@ -7,7 +7,11 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import reactX from "eslint-plugin-react-x";
 import reactDom from "eslint-plugin-react-dom";
 
+// ESLint flat config for the project. Applies strict, type-checked
+// TypeScript rules plus React-specific linting (hooks, refresh-safety,
+// JSX/DOM best practices) to every .ts/.tsx source file.
 export default defineConfig([
+  // The production build output is never linted.
   globalIgnores(["dist"]),
   {
     files: ["**/*.{ts,tsx}"],
@@ -23,6 +27,7 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
       parserOptions: {
+        // Type-aware rules need the relevant tsconfig projects to resolve types.
         project: ["./tsconfig.node.json", "./tsconfig.app.json"],
         tsconfigRootDir: import.meta.dirname,
       },
