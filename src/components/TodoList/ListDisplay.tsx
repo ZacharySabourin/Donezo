@@ -65,31 +65,32 @@ export default function ListDisplay() {
   return (
     <div id="list-display" className="flex-column-start">
       {filteredTodos.map((todo: Todo) => {
+        const isDragging = draggedId === todo.id;
+        const isHovered = hoveredId === todo.id && !isDragging;
+
         return (
           <div
             key={todo.id}
-            className="row-item-wrapper flex-row-start"
+            className={`row-item-wrapper flex-row-start ${isDragging ? "is-dragging" : ""} ${isHovered ? "is-hovered" : ""}`}
             onDragOver={(e) => {
               handleDragOver(e, todo.id);
             }}
           >
             <TodoItem todo={todo} />
-            <div
-              className="drag-indicator align-center"
+            <button
+              type="button"
+              className={`drag-indicator align-center ${isDragging ? "is-grabbing" : ""}`}
+              aria-label={`Reorder ${todo.text}`}
+              aria-roledescription="sortable handle"
+              disabled={isSaving}
               draggable={!isSaving}
               onDragStart={() => {
                 handleDragStart(todo.id);
               }}
               onDragEnd={() => void handleDragEnd()}
-              onMouseDown={(e) => {
-                if (!isSaving) e.currentTarget.style.cursor = "grabbing";
-              }}
-              onMouseUp={(e) => {
-                e.currentTarget.style.cursor = "grab";
-              }}
             >
-              ☰
-            </div>
+              <span aria-hidden="true">☰</span>
+            </button>
           </div>
         );
       })}
