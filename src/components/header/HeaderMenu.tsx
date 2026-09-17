@@ -12,14 +12,12 @@ export default function HeaderMenu() {
     <div id="header" className="align-center">
       {user ? (
         <button
-          className="round-btn border-box interactive height-100"
+          className="round-btn surface border-box interactive height-100"
           onClick={() => void logout()}
         >
           Logout
         </button>
-      ) : (
-        ""
-      )}
+      ) : null}
     </div>
   );
 }

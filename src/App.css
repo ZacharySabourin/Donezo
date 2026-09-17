@@ -2,17 +2,19 @@
  * Reusable utility classes shared across components: gradients,
  * layout helpers (flex/spacing), buttons, form inputs, the toast
  * stack, and the drag-and-drop indicator used by the Todo list.
- * Theme-specific color tokens live in index.css.
+ *
+ * Color, gradient, spacing and sizing values all come from the
+ * tokens defined in index.css — nothing here hard-codes a color or
+ * a magic pixel value, so a design tweak or a new breakpoint only
+ * has to happen in one place.
  */
 
 .gradient {
-  background-image:
-    linear-gradient(to bottom right, var(--bg-primary), var(--bg-secondary)),
-    linear-gradient(
-      to bottom right,
-      var(--primary-color-light),
-      var(--primary-color-dark)
-    );
+  background-image: var(--fill-page), var(--fill-brand);
+}
+
+.surface {
+  background-image: var(--fill-surface), var(--edge-solid);
 }
 
 .border-box {
@@ -20,6 +22,9 @@
   background-clip: padding-box, border-box;
 }
 
+/* ---------------------------------------------------------------
+ * Layout primitives
+ * ------------------------------------------------------------- */
 .height-100 {
   height: 100%;
 }
@@ -27,15 +32,17 @@
 .round-btn {
   cursor: pointer;
   border: 2px solid transparent;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
+  min-height: var(--control-size);
+  padding: 0 var(--space-4);
 }
 
 .interactive {
   transition:
-    background-color 0.2s,
-    border-color 0.2s,
-    background 0.2s ease,
-    transform 0.1s ease;
+    background-color var(--transition-med),
+    border-color var(--transition-med),
+    background var(--transition-med),
+    transform var(--transition-fast);
 }
 
 .interactive:hover {
@@ -44,6 +51,13 @@
 
 .interactive:active {
   transform: scale(0.9);
+}
+
+/* Visible keyboard focus ring for every interactive utility class */
+.round-btn:focus-visible,
+.todo-input:focus-visible {
+  outline: 2px solid var(--primary-color-dark);
+  outline-offset: 2px;
 }
 
 .flex-column-start {
@@ -65,11 +79,11 @@
 }
 
 .width-50 {
-  width: 50%;
+  width: var(--field-width-md);
 }
 
 .width-60 {
-  width: 60%;
+  width: var(--field-width-lg);
 }
 
 .align-center {
@@ -77,37 +91,31 @@
 }
 
 .gap-20 {
-  gap: 20px;
+  gap: var(--space-5);
 }
 
+/* ---------------------------------------------------------------
+ * Header
+ * ------------------------------------------------------------- */
 #header {
   display: flex;
   flex-direction: row-reverse;
-  height: 30px;
-  background-image: linear-gradient(
-    to bottom right,
-    var(--primary-color-light),
-    var(--primary-color-dark)
-  );
-  padding: 10px;
-
-  button {
-    width: 80px;
-    background-image:
-      linear-gradient(
-        to bottom right,
-        var(--list-bg-primary),
-        var(--list-bg-secondary)
-      ),
-      linear-gradient(var(--border), var(--border));
-  }
+  align-items: center;
+  height: calc(var(--control-size) + (var(--space-3) * 2));
+  background-image: var(--fill-brand);
+  padding: var(--space-3);
 }
 
 #title-card {
-  margin-top: 30px;
-  height: 230px;
-  margin-left: 25%;
-  margin-right: 25%;
+  margin-top: var(--space-7);
+  margin-inline: var(--content-inline-margin);
+  min-height: 230px;
+  transition: min-height var(--transition-med);
+
+  @media (max-width: 480px) {
+    margin-top: var(--space-5);
+    min-height: 120px;
+  }
 }
 
 .title {
@@ -115,65 +123,73 @@
   text-align: left;
 }
 
+/* ---------------------------------------------------------------
+ * Main content / auth form
+ * ------------------------------------------------------------- */
 .main-content {
-  gap: 15px;
+  gap: var(--space-4);
   flex-grow: 1;
-  margin-left: 25%;
-  margin-right: 25%;
+  margin-inline: var(--content-inline-margin);
 }
 
 .auth-form-wrapper {
   min-height: 230px;
-  padding-top: 40px;
-  padding-bottom: 40px;
-  border-radius: 20px;
-  border: 1px solid;
-  background-image: linear-gradient(
-    to bottom right,
-    var(--list-bg-primary),
-    var(--list-bg-secondary)
-  );
+  padding: var(--space-8) var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background-image: var(--fill-surface);
+
+  @media (max-width: 480px) {
+    padding: var(--space-6) var(--space-3);
+  }
 }
 
+/* ---------------------------------------------------------------
+ * Todo list
+ * ------------------------------------------------------------- */
 #list-display {
-  gap: 5px;
+  gap: var(--space-2);
   min-height: 230px;
 }
 
 .row-item-wrapper {
-  gap: 5px;
-  border-radius: 20px;
-  border: 1px solid;
-  border-color: var(--border);
-  padding: 5px 6px;
-  background-image: linear-gradient(
-    to bottom right,
-    var(--list-bg-primary),
-    var(--list-bg-secondary)
-  );
+  gap: var(--space-2);
+  align-items: center;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  padding: var(--space-2) var(--space-3);
+  background-image: var(--fill-surface);
+  overflow: hidden;
+
+  @media (max-width: 480px) {
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-2);
+  }
 }
 
 .row-item {
-  gap: 5px;
-  min-height: 30px;
+  gap: var(--space-2);
+  min-height: var(--control-size);
+  flex: 1;
+  min-width: 0; /* Crucial for nested flex shrinking */
   width: 100%;
+
+  @media (max-width: 480px) {
+    gap: var(--space-1)
+  }
 }
 
 .todo-input {
-  min-height: 30px;
+  min-height: var(--control-size);
   flex: 1;
+  min-width: 0; /* let long todo text shrink instead of overflowing the row */
   height: 100%;
   border: none;
   background-color: transparent;
-  padding: 0 4px;
+  padding: 0 var(--space-1);
   font-size: 1rem;
   color: var(--text);
   font-family: var(--sans);
-  box-sizing: border-box;
-}
-
-.todo-input:focus {
-  outline: none;
 }
 
 .todo-input::placeholder {
@@ -187,53 +203,70 @@
   appearance: none;
   background-color: transparent;
   margin: 0;
+  padding: 0; /* reset here or the box grows wider than its declared size */
   cursor: pointer;
+  flex-shrink: 0;
 
-  height: 30px;
-  width: 30px;
+  height: var(--control-size);
+  width: var(--control-size);
 
   border: 2px solid transparent;
-  border-radius: 20px;
-  background-image:
-    linear-gradient(var(--list-bg-primary), var(--list-bg-primary)),
-    linear-gradient(
-      to bottom right,
-      var(--primary-color-light),
-      var(--primary-color-dark)
-    );
+  border-radius: var(--radius-pill);
+  background-image: var(--fill-flat), var(--fill-brand);
 }
 
 .completion-check:checked {
-  background-image: linear-gradient(
-    to bottom right,
-    var(--primary-color-light),
-    var(--primary-color-dark)
-  );
+  background-image: var(--fill-brand);
   background-clip: border-box;
 }
 
-.drag-indicator {
-  height: 100%;
-  display: flex;
-  padding-top: 2px;
-  user-select: none;
-  cursor: grab;
+.completion-check:focus-visible {
+  outline: 2px solid var(--primary-color-dark);
+  outline-offset: 2px;
 }
 
+.drag-indicator {
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-6); /* fixed box instead of intrinsic glyph width */
+  padding: 0;
+  user-select: none;
+  cursor: grab;
+  touch-action: none;
+}
+
+/* ---------------------------------------------------------------
+ * List options (filter bar / clear completed)
+ * ------------------------------------------------------------- */
 .list-options {
-  height: 30px;
+  min-height: var(--control-size);
+  flex-wrap: wrap;
+  gap: var(--space-2);
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .filter-group {
-  gap: 5px;
-  flex: 1;
+  gap: var(--space-2);
+  min-width: 220px;
   height: 100%;
+
+  @media (max-width: 480px) {
+    order: -1;
+    min-width: 0;
+  }
 }
 
 .filter-choice {
   display: inline-flex;
   justify-content: center;
-  width: 80px;
+  flex: 1;
 
   input[type="radio"] {
     position: absolute;
@@ -241,21 +274,27 @@
     width: 0;
     height: 0;
   }
+
+  &:has(input[type="radio"]:focus-visible) {
+    outline: 2px solid var(--primary-color-dark);
+    outline-offset: 2px;
+  }
 }
 
 .filter-choice:has(input[type="radio"]:checked) {
-  background-image: linear-gradient(
-    to bottom right,
-    var(--primary-color-light),
-    var(--primary-color-dark)
-  );
+  background-image: var(--fill-brand);
   background-clip: border-box;
 }
 
+/* ---------------------------------------------------------------
+ * Theme toggle
+ * ------------------------------------------------------------- */
 .theme-icon {
   display: flex;
-  width: 40px;
-  height: 40px;
+  width: var(--control-size);
+  height: var(--control-size);
+  min-height: 0; /* override .round-btn's min-height so the icon stays square */
+  padding: 0;
   color: var(--primary-color-light);
 }
 
@@ -265,6 +304,9 @@ hr {
   background-color: var(--border);
 }
 
+/* ---------------------------------------------------------------
+ * Loading spinner
+ * ------------------------------------------------------------- */
 @keyframes spinner {
   0% {
     transform: rotate(0deg);
@@ -277,7 +319,7 @@ hr {
 .spinner-container {
   display: flex;
   justify-content: center;
-  height: 100px; /* Adjust as needed */
+  height: 100px;
 }
 
 .loading-spinner {
@@ -289,29 +331,37 @@ hr {
   animation: spinner 1.5s linear infinite;
 }
 
+/* ---------------------------------------------------------------
+ * Toasts
+ * ------------------------------------------------------------- */
 .toast-container {
   position: fixed;
-  bottom: 24px;
+  bottom: var(--space-6);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: var(--space-2);
+  width: min(92vw, 480px);
   z-index: 1000;
   pointer-events: none; /* Allows clicks to pass through around banners */
+
+  @media (max-width: 480px) {
+    bottom: var(--space-4);
+  }
 }
 
 .toast-banner {
   pointer-events: auto;
-  min-width: 280px;
-  max-width: 480px;
-  padding: 12px 18px;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
   border-radius: 8px;
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -335,7 +385,7 @@ hr {
   font-size: 14px;
   cursor: pointer;
   opacity: 0.8;
-  padding: 0 4px;
+  padding: 0 var(--space-1);
 }
 
 .toast-close-btn:hover {
