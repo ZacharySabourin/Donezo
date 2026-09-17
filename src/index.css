@@ -1,11 +1,25 @@
 /**
  * Global styles and CSS custom-property (design token) definitions.
  * `:root` defines the light theme; `:root.dark` (toggled by
- * ThemeToggle.tsx) overrides the same tokens for dark mode.
+ * ThemeToggle.tsx) overrides the same color tokens for dark mode.
+ *
+ * This is the single source of truth for colors, gradients,
+ * spacing, radii, control sizing and type scale. App.css and every
+ * component only ever reference these tokens — change a value once
+ * here and it propagates everywhere, including the mobile
+ * overrides at the bottom of this file.
+ *
+ * Breakpoints (kept as literals — media queries can't reference
+ * custom properties):
+ *   1024px – small laptop / large tablet
+ *    768px – tablet
+ *    480px – phone
  */
 
 :root {
   color-scheme: light dark;
+
+  /* ---------- Color tokens ---------- */
   --text: #000;
   --text-h: #000;
   --bg-primary: #fcfcfc;
@@ -16,8 +30,54 @@
   --primary-color-light: #a080fd;
   --primary-color-dark: #6d3df9;
 
+  /* ---------- Precomposed gradients ---------- */
+  --fill-page: linear-gradient(
+    to bottom right,
+    var(--bg-primary),
+    var(--bg-secondary)
+  );
+  --fill-surface: linear-gradient(
+    to bottom right,
+    var(--list-bg-primary),
+    var(--list-bg-secondary)
+  );
+  --fill-brand: linear-gradient(
+    to bottom right,
+    var(--primary-color-light),
+    var(--primary-color-dark)
+  );
+  --fill-flat: linear-gradient(var(--list-bg-primary), var(--list-bg-primary));
+  --edge-solid: linear-gradient(var(--border), var(--border));
+
+  /* ---------- Typography ---------- */
   --sans: system-ui, "Segoe UI", Roboto, sans-serif;
   --heading: system-ui, "Segoe UI", Roboto, sans-serif;
+  /* Fluid sizes: scale smoothly with viewport instead of jumping at
+     a single breakpoint, so every screen in between looks intentional. */
+  --font-body: clamp(15px, 0.85vw + 12.5px, 18px);
+  --font-h1: clamp(28px, 6vw, 56px);
+
+  /* ---------- Spacing scale (4px base grid) ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+
+  /* ---------- Sizing ---------- */
+  --radius-pill: 20px;
+  --control-size: 30px; /* checkboxes, row/control height, drag handle */
+  --content-max-width: 1126px;
+  --content-inline-margin: 25%; /* desktop gutter for header + main content */
+  --field-width-lg: 60%; /* auth inputs/buttons */
+  --field-width-md: 50%; /* "create account" toggle button */
+
+  /* ---------- Motion ---------- */
+  --transition-fast: 0.15s ease;
+  --transition-med: 0.2s ease;
 }
 
 :root.dark {
@@ -32,8 +92,28 @@
   --primary-color-dark: #0091ca;
 }
 
+/* ---------- Mobile token overrides ---------- */
+@media (max-width: 768px) {
+  :root {
+    --content-inline-margin: 6%;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --content-inline-margin: var(--space-4);
+    --control-size: 44px; /* comfortable touch target */
+    --field-width-lg: 90%;
+    --field-width-md: 90%;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
 #root {
-  width: 1126px;
+  width: var(--content-max-width);
   max-width: 100%;
   margin: 0 auto;
   text-align: center;
@@ -42,52 +122,59 @@
   display: flex;
   flex-direction: column;
   place-content: start;
-  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font: 18px/145% var(--sans);
+  font-family: var(--sans);
+  font-size: var(--font-body);
+  line-height: 145%;
   letter-spacing: 0.18px;
   color: var(--text);
-  background-image: linear-gradient(
-    to bottom right,
-    var(--bg-primary),
-    var(--bg-secondary)
-  );
+  background-image: var(--fill-page);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
 }
 
 h1 {
   font-family: var(--heading);
   font-weight: 700;
   color: var(--text-h);
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
+  font-size: var(--font-h1);
+  letter-spacing: -0.03em;
+  margin: var(--space-5) 0;
 }
+
+h2 {
+  font-family: var(--heading);
+  color: var(--text-h);
+  margin: 0;
+}
+
 p {
   margin: 0;
 }
+
 button {
   color: var(--text);
   font-family: var(--sans);
   font-weight: 500;
   font-size: 14px;
 }
+
 span {
   font-weight: 500;
   font-size: 14px;
   color: var(--text-h);
   font-family: var(--sans);
+}
+
+/* Respect OS-level motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

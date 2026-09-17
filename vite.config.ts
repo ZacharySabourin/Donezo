@@ -19,7 +19,7 @@ export default defineConfig({
   resolve: {
     alias: {
       // Lets source files use "@/..." imports instead of relative paths.
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
 });
