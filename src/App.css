@@ -95,6 +95,10 @@
   gap: var(--space-5);
 }
 
+.gap-40 {
+  gap: var(--space-8);
+}
+
 /* ---------------------------------------------------------------
  * Header
  * ------------------------------------------------------------- */
@@ -137,7 +141,7 @@
 
 .auth-form-wrapper {
   min-height: 230px;
-  padding: var(--space-8) var(--space-4);
+  padding: var(--space-1) var(--space-4) var(--space-8) var(--space-4);
   border-radius: var(--radius-pill);
   border: 1px solid var(--border);
   background-image: var(--fill-surface);
@@ -145,6 +149,31 @@
   @media (max-width: 480px) {
     padding: var(--space-6) var(--space-3);
   }
+}
+
+/* ---------------------------------------------------------------
+ * Auth form tabs
+ * ------------------------------------------------------------- */
+
+.form-tab {
+  cursor: pointer;
+  min-height: var(--control-size);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  flex: 1;
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
+.form-tab:hover {
+  font-weight: 700;
+  border-bottom: 2px solid var(--border);
+}
+
+.form-tab.active {
+  font-weight: 700;
+  border-bottom: 2px solid var(--primary-color-light);
 }
 
 /* ---------------------------------------------------------------
@@ -336,12 +365,6 @@
   min-height: 0; /* override .round-btn's min-height so the icon stays square */
   padding: 0;
   color: var(--primary-color-light);
-}
-
-hr {
-  border: none;
-  height: 1px;
-  background-color: var(--border);
 }
 
 /* ---------------------------------------------------------------

@@ -2,33 +2,56 @@ import { useState } from "react";
 import LoginForm from "./LoginForm";
 import SignupForm from "./SignupForm";
 
+const TABS = [
+  {
+    id: "login",
+    label: "LOGIN",
+  },
+  {
+    id: "signup",
+    label: "SIGNUP",
+  },
+];
+
 /**
  * Container shown to signed-out users that toggles between the
- * `LoginForm` and `SignupForm`, along with a button to switch
+ * `LoginForm` and `SignupForm`, along with tabs to switch
  * between the two modes.
  */
 export default function AuthForm() {
-  // Tracks whether the Signup form (true) or Login form (false) is shown.
-  const [isSignUp, setIsSignUp] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<string>("login");
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "login":
+        return <LoginForm />;
+      case "signup":
+        return <SignupForm />;
+      default:
+        return <LoginForm />;
+    }
+  };
 
   return (
-    <div className="auth-form-wrapper flex-column-start gap-20">
-      <h2>{isSignUp ? "SIGN UP" : "LOGIN"}</h2>
-      {isSignUp ? (
-        <SignupForm buttonText="Create an Account" />
-      ) : (
-        <LoginForm buttonText="Login" />
-      )}
-      <div>
-        <button
-          onClick={() => {
-            setIsSignUp((prev) => !prev);
-          }}
-          className="gradient border-box round-btn height-100 interactive width-50"
-        >
-          {isSignUp ? "Back to Login" : "Create an account"}
-        </button>
-      </div>
+    <div className="auth-form-wrapper flex-column-start gap-40">
+      <nav aria-label="Tabs">
+        <div className="tab-row flex-row-start">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                className={`form-tab ${isActive ? "active" : ""}`}
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                }}
+              >
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+      {renderTabContent()}
     </div>
   );
 }

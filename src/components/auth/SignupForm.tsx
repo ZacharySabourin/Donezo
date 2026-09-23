@@ -8,9 +8,7 @@ import { useState } from "react";
  * success or failure.
  * @param buttonText The label to display on the submit button.
  */
-export default function SignupForm({
-  buttonText,
-}: Readonly<{ buttonText: string }>) {
+export default function SignupForm() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
@@ -97,7 +95,7 @@ export default function SignupForm({
         type="submit"
         className="gradient border-box round-btn height-100 interactive width-60"
       >
-        {buttonText}
+        Create an Account
       </button>
     </form>
   );
