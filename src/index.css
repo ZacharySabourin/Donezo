@@ -125,6 +125,10 @@
 }
 
 body {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+
   margin: 0;
   font-family: var(--sans);
   font-size: var(--font-body);

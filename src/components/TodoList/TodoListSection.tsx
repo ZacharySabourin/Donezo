@@ -12,7 +12,6 @@ export default function TodoListSection() {
     <>
       <CreationForm />
       <ListDisplay />
-      <hr className="width-60" />
       <ListOptions />
     </>
   );

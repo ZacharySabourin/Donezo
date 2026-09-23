@@ -63,13 +63,14 @@
 .flex-column-start {
   display: flex;
   flex-direction: column;
-  place-content: start;
+  justify-content: flex-start;
+  align-items: stretch;
 }
 
 .flex-row-start {
   display: flex;
   flex-direction: row;
-  place-content: start;
+  justify-content: flex-start;
 }
 
 .flex-row-center {
@@ -130,6 +131,8 @@
   gap: var(--space-4);
   flex-grow: 1;
   margin-inline: var(--content-inline-margin);
+  height: 100vh;
+  overflow-y: hidden;
 }
 
 .auth-form-wrapper {
@@ -149,7 +152,14 @@
  * ------------------------------------------------------------- */
 #list-display {
   gap: var(--space-2);
-  min-height: 230px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  > * {
+    flex-shrink: 0 !important;
+    flex-basis: auto;
+    height: max-content;
+  }
 }
 
 .row-item-wrapper {
@@ -157,7 +167,7 @@
   align-items: center;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-1) var(--space-2);
   background-image: var(--fill-surface);
   overflow: hidden;
 
@@ -169,7 +179,7 @@
 
   @media (max-width: 480px) {
     gap: var(--space-1);
-    padding: var(--space-2) var(--space-2);
+    padding: var(--space-1) var(--space-1);
   }
 }
 
@@ -271,9 +281,9 @@
  * List options (filter bar / clear completed)
  * ------------------------------------------------------------- */
 .list-options {
-  min-height: var(--control-size);
   flex-wrap: wrap;
   gap: var(--space-2);
+  margin: var(--space-6) 0;
 
   @media (max-width: 480px) {
     flex-direction: column;
@@ -282,6 +292,7 @@
 }
 
 .filter-group {
+  flex: 1;
   gap: var(--space-2);
   min-width: 220px;
   height: 100%;
