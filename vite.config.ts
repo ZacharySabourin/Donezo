@@ -6,16 +6,6 @@ import { defineConfig } from "vite";
 export default defineConfig({
   // Enables React fast-refresh and JSX/TSX transform support.
   plugins: [react()],
-  server: {
-    proxy: {
-      // Forwards /api requests during local dev to the Donezo-API backend,
-      // avoiding CORS issues between the Vite dev server and the API.
-      "/api": {
-        target: "http://localhost:8090",
-        changeOrigin: true,
-      },
-    },
-  },
   resolve: {
     alias: {
       // Lets source files use "@/..." imports instead of relative paths.
