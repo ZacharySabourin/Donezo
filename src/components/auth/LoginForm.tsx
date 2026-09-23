@@ -7,9 +7,7 @@ import { useState } from "react";
  * a toast on success or failure.
  * @param buttonText The label to display on the submit button.
  */
-export default function LoginForm({
-  buttonText,
-}: Readonly<{ buttonText: string }>) {
+export default function LoginForm() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const { login } = useAuthDispatchContext();
@@ -68,7 +66,7 @@ export default function LoginForm({
         type="submit"
         className="gradient border-box round-btn height-100 interactive width-60"
       >
-        {buttonText}
+        Login
       </button>
     </form>
   );

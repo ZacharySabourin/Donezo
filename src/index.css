@@ -168,8 +168,13 @@ button {
   font-size: 14px;
 }
 
+hr {
+  border: none;
+  min-height: 1px;
+  background-color: var(--border);
+}
+
 span {
-  font-weight: 500;
   font-size: 14px;
   color: var(--text-h);
   font-family: var(--sans);
